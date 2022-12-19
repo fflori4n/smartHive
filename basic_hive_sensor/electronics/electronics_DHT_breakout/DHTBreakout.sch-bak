@@ -1,0 +1,181 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L myComponents:DHT22 DHT?
+U 1 1 63353A26
+P 3800 1700
+F 0 "DHT?" H 4528 1496 50  0000 L CNN
+F 1 "DHT22" H 4528 1405 50  0000 L CNN
+F 2 "" H 3800 1700 50  0001 C CNN
+F 3 "" H 3800 1700 50  0001 C CNN
+	1    3800 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L myComponents:AM2320 U?
+U 1 1 63353CE3
+P 3800 2300
+F 0 "U?" H 4428 2096 50  0000 L CNN
+F 1 "AM2320" H 4428 2005 50  0000 L CNN
+F 2 "myComponents:AM2320_Horiz" H 3800 2300 50  0001 C CNN
+F 3 "" H 3800 2300 50  0001 C CNN
+	1    3800 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 63354A96
+P 3050 2050
+F 0 "R?" H 3120 2096 50  0000 L CNN
+F 1 "R" H 3120 2005 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 2980 2050 50  0001 C CNN
+F 3 "~" H 3050 2050 50  0001 C CNN
+	1    3050 2050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3050 1900 3050 1800
+Wire Wire Line
+	3050 2200 3050 2500
+$Comp
+L power:+5C #PWR?
+U 1 1 6335683E
+P 3550 1750
+F 0 "#PWR?" H 3550 1600 50  0001 C CNN
+F 1 "+5C" H 3565 1923 50  0000 C CNN
+F 2 "" H 3550 1750 50  0001 C CNN
+F 3 "" H 3550 1750 50  0001 C CNN
+	1    3550 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5C #PWR?
+U 1 1 63357CED
+P 3650 2350
+F 0 "#PWR?" H 3650 2200 50  0001 C CNN
+F 1 "+5C" H 3665 2523 50  0000 C CNN
+F 2 "" H 3650 2350 50  0001 C CNN
+F 3 "" H 3650 2350 50  0001 C CNN
+	1    3650 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3700 2400 3650 2400
+Wire Wire Line
+	3650 2400 3650 2350
+Wire Wire Line
+	3550 2100 3550 2600
+Wire Wire Line
+	3700 2100 3550 2100
+Connection ~ 3550 2600
+Wire Wire Line
+	3700 2600 3550 2600
+$Comp
+L Connector:Conn_01x04_Male J?
+U 1 1 6335D5FE
+P 2350 2500
+F 0 "J?" H 2458 2689 50  0000 C CNN
+F 1 "Conn_01x04_Male" H 2458 2690 50  0001 C CNN
+F 2 "" H 2350 2500 50  0001 C CNN
+F 3 "~" H 2350 2500 50  0001 C CNN
+	1    2350 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 63356F68
+P 3550 2850
+F 0 "#PWR?" H 3550 2600 50  0001 C CNN
+F 1 "GND" H 3555 2677 50  0000 C CNN
+F 2 "" H 3550 2850 50  0001 C CNN
+F 3 "" H 3550 2850 50  0001 C CNN
+	1    3550 2850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3700 2700 3050 2700
+$Comp
+L Jumper:SolderJumper_2_Open JP?
+U 1 1 63361517
+P 3300 2600
+F 0 "JP?" H 2975 2600 50  0000 C CNN
+F 1 "SolderJumper_2_Open" H 3300 2714 50  0001 C CNN
+F 2 "Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm" H 3300 2600 50  0001 C CNN
+F 3 "~" H 3300 2600 50  0001 C CNN
+	1    3300 2600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3450 2600 3550 2600
+Wire Wire Line
+	3150 2600 3050 2600
+Wire Wire Line
+	3050 2600 3050 2700
+$Comp
+L power:+5C #PWR?
+U 1 1 63364907
+P 2625 1750
+F 0 "#PWR?" H 2625 1600 50  0001 C CNN
+F 1 "+5C" H 2640 1923 50  0000 C CNN
+F 2 "" H 2625 1750 50  0001 C CNN
+F 3 "" H 2625 1750 50  0001 C CNN
+	1    2625 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 63365774
+P 2625 2850
+F 0 "#PWR?" H 2625 2600 50  0001 C CNN
+F 1 "GND" H 2630 2677 50  0000 C CNN
+F 2 "" H 2625 2850 50  0001 C CNN
+F 3 "" H 2625 2850 50  0001 C CNN
+	1    2625 2850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2550 2600 2625 2600
+Wire Wire Line
+	2625 2600 2625 2850
+Wire Wire Line
+	2550 2700 3050 2700
+Connection ~ 3050 2700
+Wire Wire Line
+	2550 2400 2625 2400
+Wire Wire Line
+	2625 2400 2625 1750
+Wire Wire Line
+	3550 2600 3550 2850
+Wire Wire Line
+	3550 1750 3550 1800
+Wire Wire Line
+	3550 1800 3700 1800
+Connection ~ 3050 2500
+Wire Wire Line
+	2550 2500 3050 2500
+Wire Wire Line
+	3050 1800 3550 1800
+Connection ~ 3550 1800
+Wire Wire Line
+	3050 2500 3300 2500
+Wire Wire Line
+	3300 2500 3300 1900
+Wire Wire Line
+	3300 1900 3700 1900
+Connection ~ 3300 2500
+Wire Wire Line
+	3300 2500 3700 2500
+$EndSCHEMATC

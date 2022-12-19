@@ -1,0 +1,309 @@
+72978082301292
+myComponents
+4mmcableSteainRelief
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+4
+0
+myComponents
+4mmcableSteainRelief_limitedSilc
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+4
+0
+myComponents
+7SEG_DISPX8_MAX7219
+
+
+0
+14
+10
+myComponents
+8BitNumberPlate
+
+
+0
+8
+1
+myComponents
+AM2320_Horiz
+
+
+0
+4
+4
+myComponents
+AM2320_Horiz_copy
+
+
+0
+4
+4
+myComponents
+Arduino_Nano
+Arduino Nano, http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf
+Arduino Nano
+0
+30
+30
+myComponents
+Box120x80x50
+
+
+0
+0
+0
+myComponents
+Box150x110x70
+
+
+0
+0
+0
+myComponents
+CAP_Radial_D6.3mm_P2.50mm100uF16V
+CP, Radial series, Radial, pin pitch=2.50mm, , diameter=6.3mm, Electrolytic Capacitor
+CP Radial series Radial pin pitch 2.50mm  diameter 6.3mm Electrolytic Capacitor
+0
+2
+2
+myComponents
+Capker_L4.6mm_W2.0mm_P2.50mm
+C, Rect series, Radial, pin pitch=2.50mm, , length*width=4.6*2mm^2, Capacitor, http://www.wima.de/DE/WIMA_MKS_02.pdf
+C Rect series Radial pin pitch 2.50mm  length 4.6mm width 2mm Capacitor
+0
+2
+2
+myComponents
+Con_CopperPad1.5mmx3
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+8
+8
+myComponents
+Con_CopperPad1.5mmx4x4
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+4
+4
+myComponents
+Con_CopperPad1.5mmx4x4_withHole
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+5
+4
+myComponents
+CopperPad_2x0.75
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+4
+2
+myComponents
+CopperPad_4x4_withZipTie
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+4
+4
+myComponents
+DCDC3A
+
+
+0
+8
+4
+myComponents
+DHT_4wireCable4mm
+
+
+0
+5
+4
+myComponents
+DHT_Horiz
+
+
+0
+4
+4
+myComponents
+DIP-8_W7.62mm_Large
+8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
+THT DIP DIL PDIP 2.54mm 7.62mm 300mil
+0
+8
+8
+myComponents
+ESP32-WROOM-32U
+
+
+0
+38
+38
+myComponents
+M3 mechanical
+
+
+0
+9
+1
+myComponents
+MAX485_module
+
+
+0
+8
+8
+myComponents
+MODULE_ESP32-DEVKITC-32D
+
+
+0
+38
+38
+myComponents
+NEO6Mmodule
+
+
+0
+10
+5
+myComponents
+PinHeader_1x3_P2.54mm_widePads
+Through hole straight pin header, 1x12, 2.54mm pitch, single row
+Through hole pin header THT 1x12 2.54mm single row
+0
+3
+3
+myComponents
+PinHeader_1x6_P2.54mm_widePads
+Through hole straight pin header, 1x12, 2.54mm pitch, single row
+Through hole pin header THT 1x12 2.54mm single row
+0
+6
+6
+myComponents
+PinHeader_1x12_P2.54mm_widePads
+Through hole straight pin header, 1x12, 2.54mm pitch, single row
+Through hole pin header THT 1x12 2.54mm single row
+0
+12
+12
+myComponents
+ProMiniCloneSocket
+
+
+0
+28
+28
+myComponents
+ProMiniCloneSocket_noAnalogPins
+
+
+0
+24
+24
+myComponents
+RJ45
+8 Pol Shallow Latch Connector, Modjack, RJ45 (https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/c-bmj-0102.pdf)
+RJ45
+0
+10
+9
+myComponents
+RJ45_Amphenol_54602-x08_Horizontal
+8 Pol Shallow Latch Connector, Modjack, RJ45 (https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/c-bmj-0102.pdf)
+RJ45
+0
+8
+8
+myComponents
+SDCARDmoduleSPI
+
+
+0
+6
+6
+myComponents
+SIM800L_module
+
+
+0
+10
+7
+myComponents
+SW520-D5.2P2.5
+
+
+0
+2
+2
+myComponents
+Step Down 1.8V 2.5V 3.3V 5V 9V 12V (08-17V) 3A
+
+
+0
+4
+4
+myComponents
+TO-220-3_Horizontal_TabDown
+TO-220-3, Horizontal, RM 2.54mm, see https://www.vishay.com/docs/66542/to-220-1.pdf
+TO-220-3 Horizontal RM 2.54mm
+0
+4
+3
+myComponents
+TerminalBlockRemovablex4
+
+
+0
+4
+4
+myComponents
+TerminalBlockRemovablex6
+
+
+0
+6
+6
+myComponents
+TerminalBlock_bornier-10_P5.08mm
+simple 6pin terminal block, pitch 5.08mm, revamped version of bornier6
+terminal block bornier6
+0
+10
+10
+myComponents
+USBTTL_ProgramerHeader
+
+
+0
+6
+6
+myComponents
+ma_Logo
+
+
+0
+0
+0
+myComponents
+resistor0.25,9mm
+Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf
+Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm
+0
+2
+2
+myComponents
+xffLogo
+
+
+0
+0
+0
