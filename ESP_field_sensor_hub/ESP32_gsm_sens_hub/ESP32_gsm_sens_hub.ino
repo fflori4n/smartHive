@@ -1,4 +1,5 @@
 #include "sim7000.h"
+#include "sensHubInfo.h"
 //#include <HardwareSerial.h>
 
 
@@ -12,18 +13,25 @@ void getSubstring(char* destination, char* source, uint8_t startIndex, uint8_t e
     destination[j++] = source[i];
   }
 }
-void getGpsData(){
+void getCSQ(){
+  
+}
+String getGNSSaGSMinfo(){
   char latitudeStr[11] = "";
   char longitudeStr[12] = "";
   char gnssHeightStr[9] = "";
   char gnssSateliteNumStr[5] = "";
   char gnssCN0Str[5] = "";
+  char rssiStr[3] = "";
+  uint8_t commaCount = 0;
+  uint8_t prevCommaIndex = 0;
 
   for(int i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
     if(gsmModem.atPrint("AT\r","OK",500) == 0){
       break;
     }
   }
+  
   gsmModem.atPrint("AT+CGNSPWR=1\r","OK");
   int res = gsmModem.atPrint("AT+CGNSINF\r","+CGNSINF: 1,1",5000,"+CGNSINF: 1,0");
   if(res == -1){
@@ -35,10 +43,10 @@ void getGpsData(){
   Serial.println(gsmModem.getInBuffer());
   /// parse gnss info string
   char* gnssInfoStr = gsmModem.getInBuffer();
-  uint8_t commaCount = 0;
-  uint8_t prevCommaIndex = 0;
-  
   for(int i=0; commaCount < 19; i++){
+    if(gnssInfoStr[i] == '\0'){ /// reached end of str.
+      break;
+    }
     if(gnssInfoStr[i] == ','){
       switch(commaCount){
         case 3:
@@ -55,6 +63,7 @@ void getGpsData(){
           getSubstring(gnssHeightStr, gnssInfoStr, (prevCommaIndex + 1), i);
           Serial.print("GNSS| height: ");
           Serial.println(gnssHeightStr);
+    /// TODO: clear trailing zeros from str
         break;
         case 14:
           getSubstring(gnssSateliteNumStr, gnssInfoStr, (prevCommaIndex + 1), i);
@@ -71,9 +80,6 @@ void getGpsData(){
       commaCount++;
     }
   }
-}
-void getCSQ(){
-  char rssiStr[3] = "";
   for(int i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
     if(gsmModem.atPrint("AT\r","OK",500) == 0){
       break;
@@ -87,12 +93,71 @@ void getCSQ(){
     Serial.print("RSSI| ");
     Serial.println(rssiStr);
   }
+
+  #define _MQTT_SIMINFO_LEN 200
+  #define _TEMP_STRLEN 100
+  char mqttSimInfoStr[_MQTT_SIMINFO_LEN] = "";
+  char tempStrBuffer[_TEMP_STRLEN];
+
+  if(latitudeStr != ""){
+    snprintf(tempStrBuffer, _TEMP_STRLEN," \"latitude\":%s,",latitudeStr);
+    strcat(mqttSimInfoStr, tempStrBuffer);
+  }
+  if(longitudeStr != ""){
+    snprintf(tempStrBuffer, _TEMP_STRLEN," \"longitude\":%s,",longitudeStr);
+    strcat(mqttSimInfoStr, tempStrBuffer);
+  }
+  if(gnssHeightStr != ""){
+    snprintf(tempStrBuffer, _TEMP_STRLEN," \"masl\":%s,",gnssHeightStr);
+    strcat(mqttSimInfoStr, tempStrBuffer);
+  }
+  if(gnssSateliteNumStr != ""){
+    snprintf(tempStrBuffer, _TEMP_STRLEN," \"sat_no\":%s,",gnssSateliteNumStr);
+    strcat(mqttSimInfoStr, tempStrBuffer);
+  }
+  if(gnssCN0Str != ""){
+    snprintf(tempStrBuffer, _TEMP_STRLEN," \"cn0\":%s,",gnssCN0Str);
+    strcat(mqttSimInfoStr, tempStrBuffer);
+  }
+  if(rssiStr != ""){
+    snprintf(tempStrBuffer, _TEMP_STRLEN," \"rssi\":%s,",rssiStr);
+    strcat(mqttSimInfoStr, tempStrBuffer);
+  }
+
+  strcat(mqttSimInfoStr, " \"gps_accuracy\": 1.2,");  /// const tags
+  strcat(mqttSimInfoStr, " \"con_type\": \"EGPRS\",");  /// const tags
+  
+  //Serial.println(mqttSimInfoStr); 
+  return mqttSimInfoStr;
 }
+/*void constructMqttMsq(){
+  
+
+  
+  strcat(mqttPayloadBuffer, tempStrBuffer);
+  strcat(mqttPayloadBuffer, " }");
+
+  Serial.print(mqttPayloadBuffer);
+  
+}*/
+
 void sendMqtt(){
-  char mqttPayload[] = "hello work!";
+  char mqttPayloadBuffer[500] = "{";
+  char tempStrBuffer[100];
   unsigned int len = 5;
   //gsmModem.setMqttPayload(str,len);
   int i = 0;
+
+  /// Collect data and create mqtt frame
+ 
+  //constructMqttMsq();
+  strcat(mqttPayloadBuffer,getGNSSaGSMinfo().c_str());
+  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"MSG_ID\":%d", (int)random(0,255));
+  strcat(mqttPayloadBuffer, tempStrBuffer);
+  strcat(mqttPayloadBuffer, " }");
+
+  Serial.println(mqttPayloadBuffer);
+  
   for(i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
     if(gsmModem.atPrint("AT\r","OK",500) == 0){
       break;
@@ -102,9 +167,7 @@ void sendMqtt(){
     Serial.println("[ ER ] modem is not responding to AT");
     return;
   } 
-  getGpsData();
-  getCSQ();
- /* if(gsmModem.atPrint("AT+CNACT?\r","OK", 5000, "0.0.0.0") == -1){  /// check if connected already
+  if(gsmModem.atPrint("AT+CNACT?\r","OK", 5000, "0.0.0.0") == -1){  /// check if connected already
 
     gsmModem.atPrint("ATE1\r","OK");
     gsmModem.atPrint("AT+CPIN?\r","OK");
@@ -131,18 +194,20 @@ void sendMqtt(){
   }
   gsmModem.atPrint("AT+SMCONN\r","OK"); /// List Mqtt Settings
 
-  char mqttTopic[] = "testTopic";
+  char mqttTopic[] = "RTU0/RTU_INFO";
   char mqttMsgBuffer[200];
   char mqttTopicATCMD[100];
+
   
-  snprintf(mqttMsgBuffer, sizeof(mqttPayload)/sizeof(char), "%s\r", mqttPayload);
+  
+  snprintf(mqttMsgBuffer, sizeof(mqttMsgBuffer)/sizeof(char), "%s\r", mqttPayloadBuffer); ///TODO: eliminate this, add /r in previous strcat
   snprintf(mqttTopicATCMD, sizeof(mqttTopicATCMD)/sizeof(char), "AT+SMPUB=\"%s\",\"%d\",1,1\r", mqttTopic, strlen(mqttMsgBuffer));
   
   Serial.println(mqttTopicATCMD);
   Serial.println(mqttMsgBuffer);
   gsmModem.atPrint(mqttTopicATCMD,">"); /// List Mqtt Settings
   gsmModem.atPrint(mqttMsgBuffer,"OK"); /// List Mqtt Settings
-  gsmModem.atPrint("AT+SMDISC\r","OK"); /// List Mqtt Settings*/
+  gsmModem.atPrint("AT+SMDISC\r","OK"); /// List Mqtt Settings
  
  /*HSS burgije
  fi burgije:              12 10 8 6 5.5 5 4.5 4 3.5 3
