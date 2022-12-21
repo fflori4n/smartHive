@@ -112,7 +112,7 @@ class SIM7000{
     }
     
 
-    int atPrint(const char* atCommand, const char* responseOKKey, uint32_t timeout = 5000, const char* responseFAILKey = "___"){ 
+    int atPrint(const char* atCommand, const char* responseOKKey, uint32_t timeout = 5000, const char* responseFAILKey = "ERROR"){ 
 
       delay(100);
       timeLimitms = timeout;
