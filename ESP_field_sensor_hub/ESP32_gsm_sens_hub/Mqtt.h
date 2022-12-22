@@ -7,6 +7,8 @@ void sendHubStatusMqtt(SIM7000& gsmModem){
   int i = 0;
 
   /// Collect data and create mqtt frame
+  readVoltages();
+  addVoltageMqttTags(mqttPayloadBuffer, tempStrBuffer);
   getGNSSaGSMinfo(gsmModem, mqttPayloadBuffer, tempStrBuffer);
   
   snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"MSG_ID\":%d", (int)random(0,255));

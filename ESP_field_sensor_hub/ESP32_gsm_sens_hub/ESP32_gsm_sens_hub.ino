@@ -2,7 +2,9 @@
 
 #include "sim7000.h"
 #include "sensHubInfo.h"
+#include "ReadVoltage.h"
 #include "Mqtt.h"
+
 
 
 SIM7000 gsmModem = SIM7000();
@@ -14,12 +16,20 @@ void setup()
   Serial.begin(115200);
   Serial.println("hello serial");
   gsmModem.init();
+
+  /// pin for reading voltages
+  pinMode(VPPIN, INPUT);
+  analogSetWidth(11);
+  analogReadResolution(11);
+  /// \pin for reading voltages
+  
   Serial.println("GSM COM DUMP:");
   sendHubStatusMqtt(gsmModem);
 } 
 void loop()  
 { 
-  
+ // readVoltages();
+  //delay(1000);
   delay(10000);
   Serial.println("loop");
 }
