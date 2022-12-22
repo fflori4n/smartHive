@@ -11,6 +11,30 @@ void wakeUpAT(SIM7000& gsmModem){     /// AT has to be sent a few times to set c
     }
   }
 }
+void clearTrailingZeros(char* string){
+  for(int i=0; i < strlen(string); i++){
+    //Serial.println(*(string + strlen(string) - i));
+    if(strstr(string, ".") == NULL){
+      return;
+    }
+    /*const int strLen = strlen(string) -1;
+    if(string[strLen-i] == '0' || string[strLen-i] == '\0' || string[strLen-i] == '.'){
+      string[strLen-i] = '\0';
+    }
+    else{
+      return;
+    }
+  }*/
+  
+}
+}
+void clearDecimals(char* string){
+  char* s = strstr(string, ".");
+  if(s == NULL){
+    return;
+  }
+  *s='\0';                            /// !! this will segfault if cstr was created using char* instead of char[]
+}
 void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& tempStrBuffer)[_TEMP_STRLEN]){
   
   char latitudeStr[11] = "";
@@ -65,7 +89,9 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
           getSubstring(longitudeStr, gnssInfoStr, (prevCommaIndex + 1), i);
         break;
         case 5:
-          getSubstring(gnssHeightStr, gnssInfoStr, (prevCommaIndex + 1), i);/// TODO: clear trailing zeros from str
+          getSubstring(gnssHeightStr, gnssInfoStr, (prevCommaIndex + 1), i);
+         // clearTrailingZeros(gnssHeightStr); ///clear trailing zeros from str
+          clearDecimals(gnssHeightStr);
         break;
         case 14:
           getSubstring(gnssSateliteNumStr, gnssInfoStr, (prevCommaIndex + 1), i);
