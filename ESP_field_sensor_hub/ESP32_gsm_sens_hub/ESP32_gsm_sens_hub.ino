@@ -23,15 +23,19 @@ void setup()
   analogReadResolution(11);
   /// \pin for reading voltages
   
-  Serial.println("GSM COM DUMP:");
-  sendHubStatusMqtt(gsmModem);
+  //Serial.println("GSM COM DUMP:");
+ // sendHubStatusMqtt(gsmModem);
 } 
 void loop()  
 { 
  // readVoltages();
   //delay(1000);
-  delay(10000);
-  Serial.println("loop");
+  //delay(10000);
+  //Serial.println("loop");
+
+  Serial.println("GSM COM DUMP:");
+  sendHubStatusMqtt(gsmModem);
+  delay(10*60*1000);
 }
 
 int sendATCommand(const char* command, const char* response ){

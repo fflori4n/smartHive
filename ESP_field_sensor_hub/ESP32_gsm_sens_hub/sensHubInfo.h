@@ -42,7 +42,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
   char gnssHeightStr[9] = "";
   char gnssSateliteNumStr[5] = "";
   char gnssCN0Str[5] = "";
-  char rssiStr[3] = "";
+  char rssiStr[5] = "";
   
   uint8_t commaCount = 0;
   uint8_t prevCommaIndex = 0;
@@ -52,15 +52,35 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
   wakeUpAT(gsmModem);
 
   /// GET RSSI INFO
+
+    /*  <rssi>
+    0 - 115 dBm or less
+    1 - 111 dBm
+    2...30 - 110... - 54 dBm
+    31 - 52 dBm or greater
+    99 not known or not detectable*/
+
   if(gsmModem.atPrint("AT+CSQ\r","OK") == 0){   
+    const int RSSILUT[] = {115, 111, 110, 109, 107, 105, 103, 101, 99, 97, 95, 93, 91, 89, 87, 85, 83, 81, 79, 77, 75, 73, 71, 69, 67, 65, 63, 61, 59, 57, 55, 53};
     char* csqRespStr = gsmModem.getInBuffer();
     int startIndex = (strstr(csqRespStr, "+CSQ: ") + 6) - csqRespStr;
     int endIndex = strstr(csqRespStr, ",") - csqRespStr;
     getSubstring(rssiStr, csqRespStr, startIndex, endIndex);
+    int rssiSimNotation = atoi(rssiStr);
 
+    if(rssiSimNotation < 32){                       /// convert SIM response to dBm
+      rssiSimNotation = RSSILUT[rssiSimNotation];
+    }
+    else{
+      rssiSimNotation = 0;  /// 99 means unknown or no connection
+    }
+    snprintf(rssiStr, 3,"%d",rssiSimNotation);  
+    
 #ifdef _GNSS_GSM_VERBOSE
     Serial.print("RSSI| ");
     Serial.println(rssiStr);
+    Serial.print("RSSI dBm| ");
+    Serial.print(rssiSimNotation);
 #endif
   }
 
@@ -154,7 +174,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
     snprintf(tempStrBuffer, _TEMP_STRLEN," \"rssi\":%s,",rssiStr);
     strcat(mqttPayloadBuff, tempStrBuffer);
   } 
-  strcat(mqttPayloadBuff, " \"con_type\": \"EGPRS\",");                         /// add comm link type
+  strcat(mqttPayloadBuff, " \"con_type\":\"EGPRS\",");                         /// add comm link type
 
   /// return - mqttPayloadBuff modified, data added!
 }

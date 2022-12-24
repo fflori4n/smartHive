@@ -11,10 +11,12 @@ void sendHubStatusMqtt(SIM7000& gsmModem){
   addVoltageMqttTags(mqttPayloadBuffer, tempStrBuffer);
   getGNSSaGSMinfo(gsmModem, mqttPayloadBuffer, tempStrBuffer);
   
-  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"MSG_ID\":%d", (int)random(0,255));
+  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)random(0,255));
   strcat(mqttPayloadBuffer, tempStrBuffer);
   strcat(mqttPayloadBuffer, " }\r");                                                                    /// !! the \r is very important, plese do not delete
   Serial.println(mqttPayloadBuffer);
+
+  //return;
   
   for(i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
     if(gsmModem.atPrint("AT\r","OK",500) == 0){

@@ -1,7 +1,7 @@
 #define VPPIN 36
 
 double vp;
-double vn;
+double vn = 10.12;
 
 void readVoltages(){
   #define VP_SCALE 12.37/1145  /// real voltage / ADC value
