@@ -4,10 +4,12 @@
 #include "sensHubInfo.h"
 #include "ReadVoltage.h"
 #include "Mqtt.h"
+#include "RS485Com.h"
 
 
 
 SIM7000 gsmModem = SIM7000();
+RS485Com com485 = RS485Com();
 
 
 void setup()  
@@ -33,9 +35,16 @@ void loop()
   //delay(10000);
   //Serial.println("loop");
 
-  Serial.println("GSM COM DUMP:");
-  sendHubStatusMqtt(gsmModem);
-  delay(600000);
+  //Serial.println("GSM COM DUMP:");
+  //sendHubStatusMqtt(gsmModem);
+  //delay(600000);
+  //com485.sendDataPullMsg('A', 'B');
+  
+  
+  com485.sendPollRequest();
+  delay(1500);
+  Serial.println(com485.checkInbuf());
+  delay(10000);
 }
 
 int sendATCommand(const char* command, const char* response ){
