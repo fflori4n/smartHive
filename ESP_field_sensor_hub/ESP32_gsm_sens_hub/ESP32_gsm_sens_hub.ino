@@ -35,7 +35,7 @@ void loop()
 
   Serial.println("GSM COM DUMP:");
   sendHubStatusMqtt(gsmModem);
-  delay(10*60*1000);
+  delay(600000);
 }
 
 int sendATCommand(const char* command, const char* response ){

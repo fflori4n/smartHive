@@ -53,11 +53,10 @@ void sendHubStatusMqtt(SIM7000& gsmModem){
     gsmModem.atPrint("AT+SMCONF=\"CLIENTID\",\"ESP_DEV0\"\r","OK"); /// List Mqtt Settings
     gsmModem.atPrint("AT+SMCONF=\"KEEPTIME\",60\r","OK"); /// List Mqtt Settings
   }
-  if(gsmModem.atPrint("AT+SMCONN\r","OK", 30000, "ERROR") != 0){
+  if(gsmModem.atPrint("AT+SMCONN\r","OK", 10000, "ERROR") != 0){
     Serial.println("MQTT| probably not connected-server might be offline. ");
   }
 
-  //snprintf(mqttMsgBuffer, sizeof(mqttMsgBuffer)/sizeof(char), "%s\r", mqttPayloadBuffer); ///TODO: eliminate this, add /r in previous strcat
   snprintf(mqttTopicATCMD, sizeof(mqttTopicATCMD)/sizeof(char), "AT+SMPUB=\"%s\",\"%d\",1,1\r", mqttTopic, strlen(mqttPayloadBuffer));
 
   Serial.print("MQTT| topic:");
@@ -69,6 +68,10 @@ void sendHubStatusMqtt(SIM7000& gsmModem){
   if(gsmModem.atPrint(mqttPayloadBuffer,"OK") == 0){
     Serial.println("MQTT| sent. [ OK ]");
   } 
+  else{
+    Serial.println("MQTT| [ Error ]");
+  }
   gsmModem.atPrint("AT+SMDISC\r","OK"); 
+ // gsmModem.atPrint("AT+SMDISC\r","OK");
  
 }

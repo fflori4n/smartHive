@@ -16,17 +16,8 @@ void clearTrailingZeros(char* string){
     //Serial.println(*(string + strlen(string) - i));
     if(strstr(string, ".") == NULL){
       return;
-    }
-    /*const int strLen = strlen(string) -1;
-    if(string[strLen-i] == '0' || string[strLen-i] == '\0' || string[strLen-i] == '.'){
-      string[strLen-i] = '\0';
-    }
-    else{
-      return;
-    }
-  }*/
-  
-}
+    } 
+  }
 }
 void clearDecimals(char* string){
   char* s = strstr(string, ".");
@@ -75,6 +66,11 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
       rssiSimNotation = 0;  /// 99 means unknown or no connection
     }
     snprintf(rssiStr, 3,"%d",rssiSimNotation);  
+
+  
+ //gsmModem.atPrint("AT+CUSD=1\r","OK");
+ //gsmModem.atPrint("AT+CUSD=1,\"*100#\",15\r","OK");
+ 
     
 #ifdef _GNSS_GSM_VERBOSE
     Serial.print("RSSI| ");
