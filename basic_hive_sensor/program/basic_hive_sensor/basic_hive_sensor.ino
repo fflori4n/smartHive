@@ -1,6 +1,8 @@
 #include <SoftwareSerial.h> /// probably will be removed
 #include "LowPower.h"
 #include "DHT.h"
+#include <avr/power.h>
+#include <avr/sleep.h>
 
 
 #define RO_PIN 5//10
@@ -61,6 +63,47 @@ void setup() {
     Serial.print("interrupt - TX incoming...");
 }*/
 
+void goIdle(){ /// From: https://rubenlaguna.com/post/2008-10-15-arduino-sleep-mode-waking-up-when-receiving-data-on-the-usart/
+
+/* Now is the time to set the sleep mode. In the Atmega8 datasheet
+ * http://www.atmel.com/dyn/resources/prod_documents/doc2486.pdf on page 35
+ * there is a list of sleep modes which explains which clocks and
+ * wake up sources are available in which sleep modus.
+ *
+ * In the avr/sleep.h file, the call names of these sleep modus are to be found:
+ *
+ * The 5 different modes are:
+ * SLEEP_MODE_IDLE -the least power savings
+ * SLEEP_MODE_ADC
+ * SLEEP_MODE_PWR_SAVE
+ * SLEEP_MODE_STANDBY
+ * SLEEP_MODE_PWR_DOWN -the most power savings
+ *
+ * the power reduction management <avr/power.h> is described in
+ * http://www.nongnu.org/avr-libc/user-manual/group_avr_power.html
+ */
+
+set_sleep_mode(SLEEP_MODE_IDLE); // sleep mode is set here
+
+sleep_enable(); // enables the sleep bit in the mcucr register
+// so sleep is possible. just a safety pin
+
+power_adc_disable();
+power_spi_disable();
+power_timer0_disable();
+power_timer1_disable();
+power_timer2_disable();
+power_twi_disable();
+
+sleep_mode(); // here the device is actually put to sleep!!
+
+// THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
+sleep_disable(); // first thing after waking from sleep:
+// disable sleep...
+
+power_all_enable();
+
+}
 void readDHTs(){
   #define PRINT_READINGS
     dht0Temp = -999;
@@ -81,7 +124,7 @@ void readDHTs(){
       dht0Humi = (int)(newHumi*10);
     }
     #ifdef PRINT_READINGS
-    Serial.print(F("DHT 0 -Temp: "));
+    Serial.print(F("DHT0|Temp: "));
     Serial.print(newTemp);
     Serial.print(F(" Himidity: "));
     Serial.println(newHumi);
@@ -97,7 +140,7 @@ void readDHTs(){
       dht1Humi = (int)(newHumi*10);
     }
     #ifdef PRINT_READINGS
-    Serial.print(F("DHT 1 -Temp: "));
+    Serial.print(F("DHT1|Temp: "));
     Serial.print(newTemp);
     Serial.print(F(" Himidity: "));
     Serial.println(newHumi);
@@ -113,7 +156,7 @@ void readDHTs(){
       dht2Humi = (int)(newHumi*10);
     }
     #ifdef PRINT_READINGS
-    Serial.print(F("DHT 2 -Temp: "));
+    Serial.print(F("DHT2|Temp: "));
     Serial.print(newTemp);
     Serial.print(F(" Himidity: "));
     Serial.println(newHumi);
@@ -138,16 +181,27 @@ void loop() {
     
 
     // put your main code here, to run repeatedly:
-    attachInterrupt(0, ISR_TX, HIGH);
+
+    
+    //serial485.end();  
+    //USBDevice.detach();
+    /*attachInterrupt(0, ISR_TX, HIGH);
+    Serial.println(F("Going to sleep."));
+    Serial.end();
     // Enter power down state with ADC and BOD module disabled.
     // Wake up when wake up pin is low.
-    Serial.println(F("Going to sleep."));
-    delay(5000);
+    delay(500);
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
+    delay(500);
     // Disable external pin interrupt on wake up pin.
-    Serial.println(F("Woke up."));
     detachInterrupt(0); 
-    Serial.println(F("loop"));
+    
+    Serial.begin(9600);
+    //serial485.begin(BAUD);*/
+    goIdle();
+    Serial.println(F("Woke up."));
+    
+    //Serial.println(F("loop"));
     loopCount = 0;
     //Serial.println(RAMEND - SP);
   }

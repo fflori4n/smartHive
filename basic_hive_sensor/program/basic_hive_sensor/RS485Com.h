@@ -74,21 +74,21 @@ class RS485Com {
       while (!msgRcvd && (serCharTimeout <= TMOUT)) {
           if (!serial485.available()) {   /// if there is no new character, wait for a bit
             serCharTimeout++;
-            delayMicroseconds(100);
+            delayMicroseconds(10000);
             continue;
           }
           serCharTimeout = 0;
           msgBuff[strIndex] = serial485.read();
           //Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
           if(msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 1) % MSGBUFF_LEN] && msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 2) % MSGBUFF_LEN]){ /// check if there are 3 same chars next to each other
-            //Serial.print("3 same chars next to each other at index: ");
-            //Serial.println(strIndex);
+            Serial.print("3 same chars next to each other at index: ");
+            Serial.println(strIndex);
             if(msgBuff[strIndex] == STARTSYMB){
               //Serial.println("Start symbol");
               strHead = strIndex;
             }
             else if(msgBuff[strIndex] == ENDSYMB){
-              //Serial.println("End symbol");
+              Serial.println("End symbol");
               msgRcvd = true;  /// will break loop, but first increment strIndex
               strHead = (strHead + 1)%MSGBUFF_LEN;  /// offset msg to skip '<' startchar
               strIndex = (strIndex + MSGBUFF_LEN - 2)%MSGBUFF_LEN;
@@ -96,26 +96,30 @@ class RS485Com {
               break;
             }
           }
-          if(strIndex == ((strHead + MSGBUFF_LEN - 1)% MSGBUFF_LEN)){ /// TODO: test this some more
+          /*if(strIndex == ((strHead + MSGBUFF_LEN - 1)% MSGBUFF_LEN)){ /// TODO: test this some more
             /// ring buffer is full, TLDR
-              Serial.println(F("Msg too long"));
+              Serial.println(F("Msg too long:"));
+              while(serial485.available()){
+                Serial.print((char)serial485.read());
+              }
+               Serial.println(F("-> dropped characters."));
               return -1;
-          }
+          }*/
           strIndex = (strIndex + 1) % MSGBUFF_LEN;
           
       }
       if(!msgRcvd){
-        Serial.println(F("Incomplete msg or timeout!"));
+        Serial.println(F("RS485| [ Er ] Incomplete msg or timeout!"));
         return -1;
       }
       if(msgBuff[strHead] != THIS_DEV_ADDR){  /// check if msg starts with this devices address
-        Serial.println(F("MSG not for me!"));
+        Serial.println(F("RS485| MSG not for me!"));
         return -1;
       }
       //Serial.println(crc16(strPtr, 9));
       //Serial.println(crc16Ring(strHead,strIndex));
       if (crc16Ring(strHead,strIndex) != 0){
-        Serial.println("CRC incorrect");
+        Serial.println(F("CRC incorrect"));
         return -1;
       }
       //Serial.println("CRC correct");
@@ -187,7 +191,8 @@ class RS485Com {
       digitalWrite(DE_PIN, HIGH); /// Driver enabled - send
       delayMicroseconds(5000);
       serial485.print(msgBuff);
-      delayMicroseconds(5000);
+      serial485.flush();  /// wait for TXC0, serial buff sent
+      delayMicroseconds(5000);  /// wait some more, just to be sure
       digitalWrite(DE_PIN, LOW); /// Driver disabled - listening only
       delay(50);
       digitalWrite(13, LOW);
