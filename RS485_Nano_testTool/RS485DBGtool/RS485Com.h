@@ -10,7 +10,7 @@
 //#define MY_ADDR '2'
 
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
-#define THIS_DEV_ADDR 65
+#define THIS_DEV_ADDR 70
 #define MASTER_DEV_ADDR 70
 #define DEV_TYPE 72
 
@@ -278,6 +278,9 @@ class RS485Com {
 
       digitalWrite(DE_PIN, HIGH); /// Driver enabled - send
       delay(5);
+      /*for(int i=0; i< payloadLen+5; i++){   /// NOTE: '\0' will not be sent
+        serial485.write(msgBuff[i]);
+      }*/
       serial485.print(msgBuff);
       serial485.flush();  /// wait for TXC0, serial buff sent
       Serial.println(msgBuff);

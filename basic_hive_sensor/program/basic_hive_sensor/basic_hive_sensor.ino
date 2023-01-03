@@ -104,7 +104,7 @@ sleep_disable(); // first thing after waking from sleep:
 power_all_enable();
 
 }
-void readDHTs(){
+void readDHTs(){  /// TODO: optimise this.
   #define PRINT_READINGS
     dht0Temp = -999;
     dht1Temp = -999;
@@ -163,7 +163,7 @@ void readDHTs(){
     #endif
 }
 void ISR_TX(){
-  Serial.print("tx interrupt!");
+ // Serial.print(F());
  /* if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){
     serial.respond2PollAll();
   }*/
@@ -171,38 +171,17 @@ void ISR_TX(){
 void loop() {
   if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){
     readDHTs();
-    serial.respond2PollAll();
+    serial.respond2Poll();
   }
   delay(10);
-  //Serial.println("Main loop");
-  //readDHTs();
 
   if (loopCount > 250) {
-    
-
-    // put your main code here, to run repeatedly:
-
-    
-    //serial485.end();  
-    //USBDevice.detach();
-    /*attachInterrupt(0, ISR_TX, HIGH);
-    Serial.println(F("Going to sleep."));
-    Serial.end();
-    // Enter power down state with ADC and BOD module disabled.
-    // Wake up when wake up pin is low.
-    delay(500);
-    LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
-    delay(500);
-    // Disable external pin interrupt on wake up pin.
-    detachInterrupt(0); 
-    
-    Serial.begin(9600);
-    //serial485.begin(BAUD);*/
     goIdle();
     Serial.println(F("Woke up."));
     
     //Serial.println(F("loop"));
     loopCount = 0;
+    delay(200);
     //Serial.println(RAMEND - SP);
   }
   loopCount ++;

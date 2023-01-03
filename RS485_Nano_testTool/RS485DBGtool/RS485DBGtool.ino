@@ -344,7 +344,7 @@ void setup() {
   //rsSerial.sendMsg(a, msg);
   //serCom.createPollFrame();
   //msg = "2,POL*";
-  rsSerial.pollSensor('A','F');
+  rsSerial.pollSensor((char)65,(char)70);
   //serCom.sendStr(msg);
 
 }

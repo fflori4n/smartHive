@@ -2,25 +2,21 @@
 #include <SoftwareSerial.h>
 
 
-
+/// TODO: split this into settings.h
+#ifndef USE_SETTINGS_HEADER
 #define BAUD 9600
-//#define MASTER_ADDR '0'
-//#define MY_ADDR '2'
 
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
 #define THIS_DEV_ADDR 65
 #define MASTER_DEV_ADDR 70
-#define DEV_TYPE 72
+#define DEV_TYPE_CHAR 'A'
 
-//#define MASTER_ADDR_STR "0"
-//#define MY_ADDR_STR "2"
-//#define DEV_TYPE_STR "A"
-
-
-
-//#define RO_PIN 10
+//#define RO_PIN 10   /// RS485 module pins
 //#define DI_PIN 11
 //#define DE_PIN 12
+
+//#define DEV_IS_MASTER   /// compile with as master (base), or compile as slave (sensor)
+#endif
 
 SoftwareSerial serial485(RO_PIN, DI_PIN); // RX, TX
 
@@ -36,16 +32,69 @@ class RS485Com {
 
   private:
     char msgBuff[MSGBUFF_LEN];
-    /// chk in buff******
     bool msgRcvd = false;
     unsigned int strIndex = 0;
     unsigned int strHead = 0;
     unsigned short serCharTimeout = 0;
-    char newChar = ' ';
+    //char newChar = ' ';
     int i,j;
-    ///*******************
-    /// parseMsgInBuff****
-    ///*******************
+
+    /// from: https://stackoverflow.com/questions/17196743/crc-ccitt-implementation sarvankumar_t
+    /// crc16 implementation that works with zero verification CRC-CCITT in XMODEM
+    unsigned short crc16(char *ptr, int count) {
+      int  crc = 0;
+      char i;
+      //crc = 0;
+      while (--count >= 0) {
+        crc = crc ^ (int) * ptr++ << 8;
+        i = 8;
+        do
+        {
+          if (crc & 0x8000)
+            crc = crc << 1 ^ 0x1021;
+          else
+            crc = crc << 1;
+        } while (--i);
+      }
+      return crc;
+    }
+    /**
+     * The same CRC16 function, but for data in ring buffer
+     */
+    unsigned short crc16Ring(unsigned int head, unsigned int tail) {
+      int  crc = 0;
+      char i;
+      //crc = 0;
+      for(; head != tail; head = (head + 1) % MSGBUFF_LEN) {
+        crc = crc ^ (int)msgBuff[head] << 8;
+        i = 8;
+        for(int i=0; i<8; i++){
+          if (crc & 0x8000){              /// if msb is set, shift and flip
+            crc = crc << 1 ^ 0x1021;
+          }
+          else{
+            crc = crc << 1;               /// if msb is not set, shift only
+          }
+        }
+      }
+      return crc;
+    }
+
+    void printBuff(){
+      for(i=0; i<MSGBUFF_LEN; i++){
+        Serial.print(msgBuff[i]);
+      }
+    }
+
+    void shiftBuffRight(byte places, char shiftInChar){  /// rightmost bit will be lost, but I don't care
+      for(; places > 0; places--){
+        for(i= (MSGBUFF_LEN - 2); i>=0; i--){
+        msgBuff[i+1] = msgBuff[i];
+        }
+        msgBuff[0] = shiftInChar;
+      }
+    }
+    
   public:
     RS485Com() {
       pinMode(DE_PIN, OUTPUT);
@@ -65,7 +114,6 @@ class RS485Com {
     * return -1; - msg has no start or stop symbols/ msg too long/ CRC incorrect/ address incorrect
     */
     int checkInbuf() {
-      //#define LISTEN_VERB
       if (!serial485.available()) {
         return 1; /// no incoming msg
       }
@@ -81,14 +129,14 @@ class RS485Com {
           msgBuff[strIndex] = serial485.read();
           //Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
           if(msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 1) % MSGBUFF_LEN] && msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 2) % MSGBUFF_LEN]){ /// check if there are 3 same chars next to each other
-            Serial.print("3 same chars next to each other at index: ");
+            Serial.print(F("3 same chars next to each other at index: "));
             Serial.println(strIndex);
             if(msgBuff[strIndex] == STARTSYMB){
               //Serial.println("Start symbol");
               strHead = strIndex;
             }
             else if(msgBuff[strIndex] == ENDSYMB){
-              Serial.println("End symbol");
+              Serial.println(F("End symbol"));
               msgRcvd = true;  /// will break loop, but first increment strIndex
               strHead = (strHead + 1)%MSGBUFF_LEN;  /// offset msg to skip '<' startchar
               strIndex = (strIndex + MSGBUFF_LEN - 2)%MSGBUFF_LEN;
@@ -119,23 +167,17 @@ class RS485Com {
       //Serial.println(crc16(strPtr, 9));
       //Serial.println(crc16Ring(strHead,strIndex));
       if (crc16Ring(strHead,strIndex) != 0){
-        Serial.println(F("CRC incorrect"));
+        Serial.println(F("RS485| CRC incorrect"));
         return -1;
       }
       //Serial.println("CRC correct");
       strIndex = (strIndex + MSGBUFF_LEN - 2)%MSGBUFF_LEN;  /// drop CRC16 bytes from msg
-      Serial.print(F("Got: "));
+      Serial.print(F("RS485| Got: "));
       for(i = strHead; i != strIndex; i = (i + 1)%MSGBUFF_LEN){
         Serial.print(msgBuff[i]);
       }
       Serial.println();
       return 0; /// msg read and ready to parse
-    }
-
-    void printBuff(){
-      for(i=0; i<MSGBUFF_LEN; i++){
-        Serial.print(msgBuff[i]);
-      }
     }
 
     int chkIfPoll(){
@@ -155,87 +197,71 @@ class RS485Com {
       }
       return -1;
     }
-    void shiftBuffRight(byte places, char shiftIn){  /// rightmost bit will be lost, but I don't care
-      for(; places > 0; places--){
-        for(i= (MSGBUFF_LEN - 2); i>=0; i--){
-        msgBuff[i+1] = msgBuff[i];
-        }
-        msgBuff[0] = shiftIn;
-      }
+    
+#ifndef DEV_IS_MASTER
+    void respond2Poll(){
+      snprintf(msgBuff, MSGBUFF_LEN, "%d,%d,%d,%d,%d,%d,%d,%d", dht0Temp, dht0Humi, dht1Temp, dht1Humi, dht2Temp, dht2Humi, tiltSensors, pIRsensors);
+      this-> sendMsg(MASTER_DEV_ADDR, THIS_DEV_ADDR, DEV_TYPE_CHAR);
     }
-    void respond2PollAll(){
+#endif
 
-      snprintf(msgBuff, MSGBUFF_LEN, "%c%c%c,%d,%d,%d,%d,%d,%d,%d,%d", (char)MASTER_DEV_ADDR, (char)THIS_DEV_ADDR, (char)DEV_TYPE, dht0Temp, dht0Humi, dht1Temp, dht1Humi, dht2Temp, dht2Humi, tiltSensors, pIRsensors);
-      uint16_t crc = crc16(msgBuff, strlen(msgBuff));
-      if(!((strlen(msgBuff)+5 + 3) < MSGBUFF_LEN)){ /// +3 because msg will be shifted right 3 places
-        Serial.println(F("No space in buffer!"));
+#ifdef DEV_IS_MASTER
+    void pollSensor(const char &destinationAddr, const char &sourceAddr){
+      snprintf(msgBuff, MSGBUFF_LEN, POLL_ALL);
+      this-> sendMsg(destinationAddr, sourceAddr, DEV_TYPE_CHAR);
+    }
+#endif
+/*
+ * takes cstring from msgBuff, and adds source, destination address, than calculates 2 bit CRC, adds it to the end of the string, and adds <<< and >>> start and stop bits
+ * 
+ * Example:
+ * <<<AF,POL*⸮⸮>>>
+ * <<<FAH,210,370,-999,-999,-999,-999,0,0⸮⸮>>>
+ * 
+ * 
+ */
+    int sendMsg(const char &destinationAddr,const char &sourceAddr, const char &devType) {
+      uint16_t payloadLen = strlen(msgBuff);
+      if(payloadLen < 1){
+        Serial.println("msgBuff is empty. Not sending.");
         return;
       }
-      msgBuff[strlen(msgBuff)+5] = '\0';
-      msgBuff[strlen(msgBuff)+4] = '>';
-      msgBuff[strlen(msgBuff)+3] = '>';
-      msgBuff[strlen(msgBuff)+2] = '>';
-      msgBuff[strlen(msgBuff)+1] = (char)(crc | 0xFF);
-      msgBuff[strlen(msgBuff)] = (char)(crc >> 8);
+
+      shiftBuffRight(4, '>');
+      msgBuff[0] = destinationAddr;
+      msgBuff[1] = sourceAddr;
+      msgBuff[2] = devType;
+      msgBuff[3] = ',';
+      payloadLen = strlen(msgBuff);
+      uint16_t crc = crc16(msgBuff, payloadLen);
+
+      msgBuff[payloadLen+5] = '\0';
+      msgBuff[payloadLen+4] = '>';
+      msgBuff[payloadLen+3] = '>';
+      msgBuff[payloadLen+2] = '>';
+      msgBuff[payloadLen+1] = (char)(crc & 0xFF);
+      msgBuff[payloadLen] = (char)(crc >> 8);
       shiftBuffRight(3, '<');
-      //Serial.println((char)(crc >> 8));
-      //Serial.println((char)(crc | 0xFF));
-      printBuff();
-      //Serial.print(F("Sending: "));
-      //Serial.print(msgBuff);
-      sendBuffStr();
-    }
 
-    void sendBuffStr(){
-      digitalWrite(13, HIGH);
+
       digitalWrite(DE_PIN, HIGH); /// Driver enabled - send
-      delayMicroseconds(5000);
-      serial485.print(msgBuff);
+      delay(5);
+      //serial485.print(msgBuff);
+      serial485.write(msgBuff, (payloadLen + 8));  /// TODO: this should fix '\0' char shenanigans but test it.
       serial485.flush();  /// wait for TXC0, serial buff sent
-      delayMicroseconds(5000);  /// wait some more, just to be sure
+      Serial.println(msgBuff);
+      delay(5);
       digitalWrite(DE_PIN, LOW); /// Driver disabled - listening only
-      delay(50);
+
+      digitalWrite(13, HIGH);
+      delay(100);
       digitalWrite(13, LOW);
-      Serial.flush();
-    }
 
-    /// from: https://stackoverflow.com/questions/17196743/crc-ccitt-implementation sarvankumar_t
-    /// crc16 implementation that works with zero verification CRC-CCITT in XMODEM
-    unsigned short crc16(char *ptr, int count) {
-      int  crc = 0;
-      char i;
-      //crc = 0;
-      while (--count >= 0) {
-        crc = crc ^ (int) * ptr++ << 8;
-        i = 8;
-        do
-        {
-          if (crc & 0x8000)
-            crc = crc << 1 ^ 0x1021;
-          else
-            crc = crc << 1;
-        } while (--i);
-      }
-      return crc;
-    }
 
-    unsigned short crc16Ring(unsigned int head, unsigned int tail) {
-      int  crc = 0;
-      char i;
-      //crc = 0;
-      for(; head != tail; head = (head + 1) % MSGBUFF_LEN) {
-        crc = crc ^ (int)msgBuff[head] << 8;
-        i = 8;
-        for(int i=0; i<8; i++){
-          if (crc & 0x8000){              /// if msb is set, shift and flip
-            crc = crc << 1 ^ 0x1021;
-          }
-          else{
-            crc = crc << 1;               /// if msb is not set, shift only
-          }
-        }
-      }
-      return crc;
-    }
+#ifdef VERB_SER
+      Serial.print("sent: ");
+      Serial.println(msgBuff);
+#endif
 
+    }
 };
