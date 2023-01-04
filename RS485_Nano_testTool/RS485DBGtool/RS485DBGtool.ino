@@ -344,7 +344,7 @@ void setup() {
   //rsSerial.sendMsg(a, msg);
   //serCom.createPollFrame();
   //msg = "2,POL*";
-  rsSerial.pollSensor((char)65,(char)70);
+  //rsSerial.pollSensor((char)65,(char)70);
   //serCom.sendStr(msg);
 
 }
@@ -352,11 +352,16 @@ void loop() {
 
   /* serCom.send("hello world!", 0,1);
     delay(500);*/
-
+  rsSerial.pollSensor((char)65,(char)70);
+  delay(2000);
   serCom.checkIncoming();
+  delay(5000);
+  rsSerial.pollSensor((char)66,(char)70);
+  delay(2000);
+  serCom.checkIncoming();
+  delay(5000);
 
-
-  delay(500);
+  delay(1000);
   //dht1.read();
   //dht1.dbgPrint();
 

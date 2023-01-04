@@ -17,10 +17,14 @@
 #define GPIO2_PIN 8
 #define GPIO3_PIN 9
 
+#define DHT0_TYPE DHT22
+#define DHT1_TYPE DHT11
+#define DHT2_TYPE DHT11
+
 #define DHT_TYPE DHT11   // DHT 11
-DHT dht0(DHT0_PIN, DHT_TYPE);
-DHT dht1(DHT1_PIN, DHT_TYPE);// 8
-DHT dht2(DHT2_PIN, DHT_TYPE);// 7
+DHT dht0(DHT0_PIN, DHT0_TYPE);
+DHT dht1(DHT1_PIN, DHT1_TYPE);// 8
+DHT dht2(DHT2_PIN, DHT2_TYPE);// 7
 
 int dht0Temp = -999;  /// int representation of float value, truncated to 1 decimal, and multiplied by 10, would be -99.9
 int dht0Humi = -999;
@@ -175,6 +179,9 @@ void loop() {
   }
   delay(10);
 
+  //readDHTs();
+  //delay(8000);
+  
   if (loopCount > 250) {
     goIdle();
     Serial.println(F("Woke up."));
