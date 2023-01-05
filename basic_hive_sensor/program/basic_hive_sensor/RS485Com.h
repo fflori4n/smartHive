@@ -7,7 +7,7 @@
 #define BAUD 9600
 
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
-#define THIS_DEV_ADDR 66
+#define THIS_DEV_ADDR 65
 #define MASTER_DEV_ADDR 70
 #define DEV_TYPE_CHAR 'A'
 
@@ -129,14 +129,15 @@ class RS485Com {
           msgBuff[strIndex] = serial485.read();
           //Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
           if(msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 1) % MSGBUFF_LEN] && msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 2) % MSGBUFF_LEN]){ /// check if there are 3 same chars next to each other
-            Serial.print(F("3 same chars next to each other at index: "));
-            Serial.println(strIndex);
+            //Serial.print(F("3 same chars next to each other at index: "));
             if(msgBuff[strIndex] == STARTSYMB){
-              //Serial.println("Start symbol");
+              Serial.print(F("RS485| found start at: "));
+              Serial.println(strIndex);
               strHead = strIndex;
             }
             else if(msgBuff[strIndex] == ENDSYMB){
-              Serial.println(F("End symbol"));
+              Serial.print(F("RS485| found end at: "));
+              Serial.println(strIndex);
               msgRcvd = true;  /// will break loop, but first increment strIndex
               strHead = (strHead + 1)%MSGBUFF_LEN;  /// offset msg to skip '<' startchar
               strIndex = (strIndex + MSGBUFF_LEN - 2)%MSGBUFF_LEN;
@@ -178,6 +179,13 @@ class RS485Com {
       }
       Serial.println();
       return 0; /// msg read and ready to parse
+    }
+
+    int isAvailable() {
+      if (!serial485.available()) {
+        return -1; /// no incoming msg
+      }
+      return 0;
     }
 
     int chkIfPoll(){

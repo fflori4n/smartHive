@@ -12,12 +12,13 @@
 #define DHT1_PIN 11
 #define DHT2_PIN 12
 #define WAKE_PIN 2
+#define PIR_PIN 9
 #define GPIO0_PIN 6
 #define GPIO1_PIN 7
 #define GPIO2_PIN 8
-#define GPIO3_PIN 9
+//#define GPIO3_PIN 9
 
-#define DHT0_TYPE DHT22
+#define DHT0_TYPE DHT11
 #define DHT1_TYPE DHT11
 #define DHT2_TYPE DHT11
 
@@ -33,10 +34,15 @@ int dht1Humi = -999;
 int dht2Temp = -999;
 int dht2Humi = -999;
 
-unsigned int loopCount = 0;
+//unsigned int loopCount = 0;
 
-unsigned int tiltSensors = 0x00;
-unsigned int pIRsensors = 0x00;
+volatile unsigned long timerSeconds = 999;
+volatile unsigned long secondsSincePoll = 0;
+bool noComError = false;
+
+
+uint8_t tiltSensors = 0x00;
+uint8_t pIRsensors = 0x00;
 
 #include "RS485Com.h"
 SoftwareSerial Serial485 (RO_PIN, DI_PIN); // RX, TX
@@ -48,25 +54,36 @@ void setup() {
   dht1.begin();
   dht2.begin();
 
-  pinMode(WAKE_PIN, INPUT); 
+  pinMode(WAKE_PIN, INPUT_PULLUP);
+  pinMode(PIR_PIN,  INPUT_PULLUP);
 
   // disable ADC
   ADCSRA = 0;   
 
-  /*/// enable interrupt on pin2
-  DDRD  &= 0b11111011;   // set PD2 to input 
-  PORTD |= 0b00000100;   // set PD2 to high
- 
-  PCICR |= _BV(PCIE2);   //Enable PCINT2
-  PCMSK2 |= _BV(PCINT18); //Trigger on change of PCINT18 (PD2)
-  sei(); */
+  noInterrupts();
+
+
+  
+  //PCICR |= _BV(PCIE2);   //Enable PCINT2
+  //PCMSK2 |= _BV(PCINT18); //Trigger on change of PCINT18 (PD2)
+  PCICR |= (1 << PCIE0);    // set PCIE0 to enable PCMSK0 scan
+  PCMSK0 |= (1 << PCINT0);  // set PCINT0 to trigger an interrupt on state change
+
+  // Clear registers
+  TCCR1A = 0;
+  TCCR1B = 0;
+  TCNT1 = 0;
+
+  // 1 Hz (16000000/((15624+1)*1024))
+  OCR1A = 15624;
+  // CTC
+  TCCR1B |= (1 << WGM12);
+  // Prescaler 1024
+  TCCR1B |= (1 << CS12) | (1 << CS10);
+  // Output Compare Match A Interrupt Enable
+  TIMSK1 |= (1 << OCIE1A);
+  interrupts();
 }
-
-/*ISR(PCINT2_vect ) 
-{
-    Serial.print("interrupt - TX incoming...");
-}*/
-
 void goIdle(){ /// From: https://rubenlaguna.com/post/2008-10-15-arduino-sleep-mode-waking-up-when-receiving-data-on-the-usart/
 
 /* Now is the time to set the sleep mode. In the Atmega8 datasheet
@@ -95,12 +112,10 @@ sleep_enable(); // enables the sleep bit in the mcucr register
 power_adc_disable();
 power_spi_disable();
 power_timer0_disable();
-power_timer1_disable();
+//power_timer1_disable();
 power_timer2_disable();
 power_twi_disable();
-
 sleep_mode(); // here the device is actually put to sleep!!
-
 // THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
 sleep_disable(); // first thing after waking from sleep:
 // disable sleep...
@@ -108,88 +123,118 @@ sleep_disable(); // first thing after waking from sleep:
 power_all_enable();
 
 }
-void readDHTs(){  /// TODO: optimise this.
-  #define PRINT_READINGS
-    dht0Temp = -999;
-    dht1Temp = -999;
-    dht2Temp = -999;
 
-    dht0Humi = -999;
-    dht1Humi = -999;
-    dht2Humi = -999;
-
-    double newTemp = dht0.readTemperature();
-    double newHumi = dht0.readHumidity();
-    //delay(2000);
-    if(!isnan(newTemp)){
-      dht0Temp = (int)(newTemp*10);
-    }
-    if(!isnan(newTemp)){
-      dht0Humi = (int)(newHumi*10);
-    }
-    #ifdef PRINT_READINGS
-    Serial.print(F("DHT0|Temp: "));
-    Serial.print(newTemp);
-    Serial.print(F(" Himidity: "));
-    Serial.println(newHumi);
-    #endif
-
-    newTemp = dht1.readTemperature();
-    newHumi = dht1.readHumidity();
-    //delay(2000);
-    if(!isnan(newTemp)){
-      dht1Temp = (int)(newTemp*10);
-    }
-    if(!isnan(newTemp)){
-      dht1Humi = (int)(newHumi*10);
-    }
-    #ifdef PRINT_READINGS
-    Serial.print(F("DHT1|Temp: "));
-    Serial.print(newTemp);
-    Serial.print(F(" Himidity: "));
-    Serial.println(newHumi);
-    #endif
-
-    newTemp = dht2.readTemperature();
-    newHumi = dht2.readHumidity();
-    //delay(2000);
-    if(!isnan(newTemp)){
-      dht2Temp = (int)(newTemp*10);
-    }
-    if(!isnan(newTemp)){
-      dht2Humi = (int)(newHumi*10);
-    }
-    #ifdef PRINT_READINGS
-    Serial.print(F("DHT2|Temp: "));
-    Serial.print(newTemp);
-    Serial.print(F(" Himidity: "));
-    Serial.println(newHumi);
-    #endif
+ISR( TIMER1_COMPA_vect ) 
+{
+  timerSeconds++;
+  secondsSincePoll++;
 }
-void ISR_TX(){
- // Serial.print(F());
- /* if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){
-    serial.respond2PollAll();
-  }*/
-}
-void loop() {
-  if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){
-    readDHTs();
-    serial.respond2Poll();
-  }
-  delay(10);
 
-  //readDHTs();
-  //delay(8000);
+/*ISR( PCINT2_vect ){         TODO: pin change interrupts conflict with softwareserial, maybe switch to alt sofrware serial?
   
-  if (loopCount > 250) {
-    goIdle();
-    Serial.println(F("Woke up."));
-    
-    //Serial.println(F("loop"));
-    loopCount = 0;
-    delay(200);
-    //Serial.println(RAMEND - SP);
+}*/
+/*ISR (PCINT0_vect)
+{
+  //Serial.print("pir triggered!");
+}*/
+
+void readDHT(DHT &dhtSensor, int &temp, int &humidity){  /// TODO: optimise this.
+  #define PRINT_READINGS
+  #define MAX_DHT_TEMP 99
+  #define MIN_DHT_TEMP -99
+  #define MAX_DHT_HUMI 100
+  #define MIN_DHT_HUMI 0
+  #define RETRY_DHT_READ 2
+  #define AVERAGE_FILTER_NEW_WEIGHT 0.5
+
+  double newTemp = -999;
+  double newHumi = -999;
+  byte updatedFlag;
+
+    updatedFlag = 0;
+    for(int i=0; i < RETRY_DHT_READ; i++){
+      newTemp = dhtSensor.readTemperature();
+      newHumi = dhtSensor.readHumidity();
+      
+      Serial.println(newTemp);
+      Serial.println(newHumi);
+      if((updatedFlag != 1) && !isnan(newTemp) && (newTemp <= MAX_DHT_TEMP) && (newTemp >= MIN_DHT_TEMP)){
+        if(temp != -999){
+           temp = (int)((temp * (1-AVERAGE_FILTER_NEW_WEIGHT)) + (newTemp*10)*AVERAGE_FILTER_NEW_WEIGHT);
+        }
+        else{
+          temp = (int)(newTemp*10);
+        }
+       
+        updatedFlag+=1;
+      }
+      if((updatedFlag != 2) && !isnan(newHumi) && (newTemp <= MAX_DHT_HUMI) && (newTemp >= MIN_DHT_HUMI)){ 
+        if(humidity != -999){
+           humidity = (int)((humidity * (1-AVERAGE_FILTER_NEW_WEIGHT)) + (newHumi*10)*AVERAGE_FILTER_NEW_WEIGHT);
+        }
+        else{
+          humidity = (int)(newHumi*10);
+        }
+        updatedFlag+=2;
+      }
+      
+      if(updatedFlag >=3){
+        #ifdef PRINT_READINGS
+        Serial.print(F("DHT|Temp: "));
+        Serial.print(newTemp);
+        Serial.print(F(" Humidity: "));
+        Serial.println(newHumi);
+        #endif
+        break;
+      }
+      //delay(20);
+    }
+    if(updatedFlag < 3){
+      Serial.println(F("Could not update temp & humidity."));
+    }
+}
+
+void loop() {
+ // Serial.println(F("Sleep"));
+  goIdle();
+ // Serial.println(F("Woke up."));
+
+  if(digitalRead(PIR_PIN) == HIGH){         /// poll for now, maybe don't need the interrupt
+    pIRsensors = 1;
+    //Serial.print("motion detected!");
   }
-  loopCount ++;
+  if(timerSeconds > 60){
+      Serial.println(F("reading DHT 60 sec"));
+      readDHT(dht0, dht0Temp, dht0Humi);
+      readDHT(dht1, dht1Temp, dht1Humi);
+      readDHT(dht2, dht2Temp, dht2Humi);
+      timerSeconds = 0;
+  }
+  while(serial.isAvailable() == 0){        
+    //delay(200);
+    if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){
+      serial.respond2Poll();
+      noComError = false;
+      secondsSincePoll = 0;
+      pIRsensors = 0;
+    }
+    delay(20);
+  }
+  if(secondsSincePoll > 30){
+    noComError = true;
+  }
+  if(noComError){
+    digitalWrite(13, HIGH);
+    delay(50);
+    digitalWrite(13, LOW);
+    delay(50);
+    digitalWrite(13, HIGH);
+    delay(50);
+    digitalWrite(13, LOW);
+    delay(50);
+    digitalWrite(13, HIGH);
+    delay(50);
+    digitalWrite(13, LOW);
+    delay(50);  
+  }
 }
