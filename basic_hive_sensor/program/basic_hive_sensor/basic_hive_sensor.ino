@@ -18,7 +18,7 @@
 #define GPIO2_PIN 8
 //#define GPIO3_PIN 9
 
-#define DHT0_TYPE DHT11
+#define DHT0_TYPE DHT22
 #define DHT1_TYPE DHT11
 #define DHT2_TYPE DHT11
 

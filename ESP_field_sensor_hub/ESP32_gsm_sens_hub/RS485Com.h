@@ -113,7 +113,7 @@ class RS485Com {
     * return 1; - no new msg from UART
     * return -1; - msg has no start or stop symbols/ msg too long/ CRC incorrect/ address incorrect
     */
-    int checkInbuf() {
+    int checkInbuf( const char &acceptOnlyFromType = 0, const char &acceptOnlyFromAddress = 0) {
       if (!serial485.available()) {
         return 1; /// no incoming msg
       }
@@ -127,7 +127,9 @@ class RS485Com {
           }
           serCharTimeout = 0;
           msgBuff[strIndex] = serial485.read();
-          //Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
+#ifdef PRINT_RAW_CHARS
+          Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
+#endif     
           if(msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 1) % MSGBUFF_LEN] && msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 2) % MSGBUFF_LEN]){ /// check if there are 3 same chars next to each other
             //Serial.print(F("3 same chars next to each other at index: "));
             if(msgBuff[strIndex] == STARTSYMB){
@@ -178,6 +180,19 @@ class RS485Com {
         Serial.print(msgBuff[i]);
       }
       Serial.println();
+
+      if(acceptOnlyFromAddress != 0){
+        if(msgBuff[(strHead + 1)%MSGBUFF_LEN] != acceptOnlyFromAddress){
+          Serial.println(F("RS485| MSG NOT FROM EXP. SENDER"));
+          return -1;
+        }
+      }
+      if(acceptOnlyFromType !=0){
+        if(msgBuff[(strHead + 2)%MSGBUFF_LEN] != acceptOnlyFromType){
+          Serial.println(F("RS485| MSG NOT FROM EXP. TYPE"));
+          return -1;
+        }
+      }
       return 0; /// msg read and ready to parse
     }
 
@@ -214,9 +229,16 @@ class RS485Com {
 #endif
 
 #ifdef DEV_IS_MASTER
-    void pollSensor(const char &destinationAddr, const char &sourceAddr){
+    int pollSensor(const char &destinationAddr, const char &sourceAddr){
       snprintf(msgBuff, MSGBUFF_LEN, POLL_ALL);
-      this-> sendMsg(destinationAddr, sourceAddr, DEV_TYPE_CHAR);
+      return (this-> sendMsg(destinationAddr, sourceAddr, DEV_TYPE_CHAR));
+    }
+
+    char get(uint8_t i){
+      if((strHead + i)%MSGBUFF_LEN == strIndex){
+        return '\0';
+      }
+      return msgBuff[(strHead + i)%MSGBUFF_LEN];
     }
 #endif
 /*
@@ -270,6 +292,7 @@ class RS485Com {
       Serial.print("sent: ");
       Serial.println(msgBuff);
 #endif
+    return 0;
 
     }
 };

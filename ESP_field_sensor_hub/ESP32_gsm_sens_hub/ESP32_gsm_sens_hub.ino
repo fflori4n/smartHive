@@ -12,6 +12,9 @@
 SIM7000 gsmModem = SIM7000();
 RS485Com com485 = RS485Com();
 
+BasicHiveSensor sensorA((char)65, com485);
+BasicHiveSensor sensorB((char)66, com485);
+
 
 void setup()  
 {
@@ -47,7 +50,7 @@ void loop()
   Serial.println(com485.checkInbuf());
   delay(10000);*/
 
-  com485.pollSensor((char)65,(char)70);
+  /*com485.pollSensor((char)65,(char)70);
   delay(2000);
   com485.checkInbuf();
   delay(5000);
@@ -56,7 +59,11 @@ void loop()
   com485.checkInbuf();
   delay(5000);
 
-  delay(1000);
+  delay(1000);*/
+  sensorA.update();
+  delay(2000);
+  sensorB.update();
+  delay(20000);
 }
 
 int sendATCommand(const char* command, const char* response ){
