@@ -5,6 +5,7 @@
 #include "ReadVoltage.h"
 #include "Mqtt.h"
 #include "RS485Com.h"
+#include "BasicHiveSensor.h"
 
 
 
@@ -41,10 +42,21 @@ void loop()
   //com485.sendDataPullMsg('A', 'B');
   
   
-  com485.sendPollRequest();
+/*  com485.pollSensor((char)65, (char)70);
   delay(1500);
   Serial.println(com485.checkInbuf());
-  delay(10000);
+  delay(10000);*/
+
+  com485.pollSensor((char)65,(char)70);
+  delay(2000);
+  com485.checkInbuf();
+  delay(5000);
+  com485.pollSensor((char)66,(char)70);
+  delay(2000);
+  com485.checkInbuf();
+  delay(5000);
+
+  delay(1000);
 }
 
 int sendATCommand(const char* command, const char* response ){
