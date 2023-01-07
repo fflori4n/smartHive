@@ -8,14 +8,83 @@ class BasicHiveSensor{
   RS485Com &serial;
   uint8_t readTimeOut;
 
-  //double dhtCsvData[] = { -99.9, -99.9, -99.9, -99.9, -99.9, -99.9, 0, 0};
+  double dhtCsvData[8];
   //const char* labels = {"T0", "H0", "T1", "H1", "T2"}
 
+  #define StoD_BUFF_LEN 6
+  double string2Double(char (&strBuff)[StoD_BUFF_LEN]){
+    byte multipl = 1;
+    double numb = 0;
+    
+    for(int i = 0; i< StoD_BUFF_LEN; i++){
+      if(strBuff[StoD_BUFF_LEN -1 -i] == '-'){
+        numb*=-1;
+        continue;
+      }
+      int digit = (int)(strBuff[StoD_BUFF_LEN -1 -i] - '0');
+      /*Serial.print(digit);
+      Serial.print(" ");*/
+      /*Serial.print((char)(digit + '0'));
+      Serial.print(" ");*/
+      if(digit < 0 || digit > 9){
+        continue;
+      }
+      numb+=digit*multipl;
+      multipl*=10;
+      //Serial.println(digit);
+    }
+    return numb;
+  }
   void parseCSV(){
     //uint8_t len = serial.getMSGLen();
+    uint8_t cCount = 0;
+    uint8_t strIndex = 0;
+    char strToDoubleBuff[StoD_BUFF_LEN] = "";
     char c = serial.get(0);                                       /// !! very cursed - TODO: maybe?
-    for(int i=0 ; c != '\0'; c = serial.get(++i)){
-      Serial.print(c);
+    for(int i=0 ; c != '\0'; c = serial.get(++i)){   
+      if(c == ',' || c == '\0'){ // 
+        switch(cCount){
+          case 1:
+            dhtCsvData[0] = string2Double(strToDoubleBuff)/10;
+            break;
+          case 2:
+            dhtCsvData[1] = string2Double(strToDoubleBuff)/10;
+            break;
+          case 3:
+            dhtCsvData[2] = string2Double(strToDoubleBuff)/10;
+            break;
+          case 4:
+            dhtCsvData[3] = string2Double(strToDoubleBuff)/10;
+            break;
+          case 5:
+            dhtCsvData[4] = string2Double(strToDoubleBuff)/10;
+            break;
+          case 6:
+            dhtCsvData[5] = string2Double(strToDoubleBuff)/10;
+            break;
+           /*case 7:
+            Serial.println(strToDoubleBuff);
+            dhtCsvData[6] = string2Double(strToDoubleBuff);
+            break;
+           case 8:
+            Serial.println(strToDoubleBuff);
+            dhtCsvData[7] = string2Double(strToDoubleBuff);
+            break;*/
+
+          for(int i=0; i < StoD_BUFF_LEN; i++){
+            strToDoubleBuff[i] = '\0';
+          }
+        }
+        cCount++;
+        strIndex = 0;
+        continue;
+      }
+      strToDoubleBuff[strIndex] = c;
+      strIndex++;
+      //Serial.print(c);
+    }
+    for(int i=0; i<8; i++){
+         Serial.println(dhtCsvData[i]);
     }
   }
   public:

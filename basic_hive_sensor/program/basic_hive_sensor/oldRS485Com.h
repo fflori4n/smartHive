@@ -11,9 +11,9 @@
 #define MASTER_DEV_ADDR 70
 #define DEV_TYPE_CHAR 'A'
 
-//#define RO_PIN 18   /// RS485 module pins
-//#define DI_PIN 19
-//#define DE_PIN 21
+//#define RO_PIN 10   /// RS485 module pins
+//#define DI_PIN 11
+//#define DE_PIN 12
 
 //#define DEV_IS_MASTER   /// compile with as master (base), or compile as slave (sensor)
 #endif
@@ -113,7 +113,7 @@ class RS485Com {
     * return 1; - no new msg from UART
     * return -1; - msg has no start or stop symbols/ msg too long/ CRC incorrect/ address incorrect
     */
-    int checkInbuf( const char &acceptOnlyFromType = 0, const char &acceptOnlyFromAddress = 0) {
+    int checkInbuf() {
       if (!serial485.available()) {
         return 1; /// no incoming msg
       }
@@ -127,9 +127,7 @@ class RS485Com {
           }
           serCharTimeout = 0;
           msgBuff[strIndex] = serial485.read();
-#ifdef PRINT_RAW_CHARS
-          Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
-#endif     
+          //Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
           if(msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 1) % MSGBUFF_LEN] && msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 2) % MSGBUFF_LEN]){ /// check if there are 3 same chars next to each other
             //Serial.print(F("3 same chars next to each other at index: "));
             if(msgBuff[strIndex] == STARTSYMB){
@@ -180,19 +178,6 @@ class RS485Com {
         Serial.print(msgBuff[i]);
       }
       Serial.println();
-
-      if(acceptOnlyFromAddress != 0){
-        if(msgBuff[(strHead + 1)%MSGBUFF_LEN] != acceptOnlyFromAddress){
-          Serial.println(F("RS485| MSG NOT FROM EXP. SENDER"));
-          return -1;
-        }
-      }
-      if(acceptOnlyFromType !=0){
-        if(msgBuff[(strHead + 2)%MSGBUFF_LEN] != acceptOnlyFromType){
-          Serial.println(F("RS485| MSG NOT FROM EXP. TYPE"));
-          return -1;
-        }
-      }
       return 0; /// msg read and ready to parse
     }
 
@@ -222,31 +207,6 @@ class RS485Com {
     }
     
 #ifndef DEV_IS_MASTER
-   /* char getDigit(uint8_t n, uint8_t val){  /// add leading zeros and split numbers
-      ///-999
-      if((val < -999) || (val > 1000)){
-        return ;
-      }
-      switch(n){
-        case 0:
-          if(val < 0){
-            return '-'
-          }
-          else{
-            return '\0' + (val/1000);
-          }
-          break;
-        case 1:
-          return '\0' + ((val%1000)/100);
-          break;
-        case 2:
-          return '\0' + ((val%100)/10);
-          break;
-        case 3:
-          return '\0' + (val%10);
-          break;
-      }
-    }*/
     void respond2Poll(){
       snprintf(msgBuff, MSGBUFF_LEN, "%d,%d,%d,%d,%d,%d,%d,%d", dht0Temp, dht0Humi, dht1Temp, dht1Humi, dht2Temp, dht2Humi, tiltSensors, pIRsensors);
       this-> sendMsg(MASTER_DEV_ADDR, THIS_DEV_ADDR, DEV_TYPE_CHAR);
@@ -254,16 +214,9 @@ class RS485Com {
 #endif
 
 #ifdef DEV_IS_MASTER
-    int pollSensor(const char &destinationAddr, const char &sourceAddr){
+    void pollSensor(const char &destinationAddr, const char &sourceAddr){
       snprintf(msgBuff, MSGBUFF_LEN, POLL_ALL);
-      return (this-> sendMsg(destinationAddr, sourceAddr, DEV_TYPE_CHAR));
-    }
-
-    char get(uint8_t i){
-      if((strHead + i)%MSGBUFF_LEN == strIndex){
-        return '\0';
-      }
-      return msgBuff[(strHead + i)%MSGBUFF_LEN];
+      this-> sendMsg(destinationAddr, sourceAddr, DEV_TYPE_CHAR);
     }
 #endif
 /*
@@ -279,7 +232,7 @@ class RS485Com {
       uint16_t payloadLen = strlen(msgBuff);
       if(payloadLen < 1){
         Serial.println("msgBuff is empty. Not sending.");
-        return -1;
+        return;
       }
 
       shiftBuffRight(4, '>');
@@ -317,7 +270,6 @@ class RS485Com {
       Serial.print("sent: ");
       Serial.println(msgBuff);
 #endif
-    return 0;
 
     }
 };
