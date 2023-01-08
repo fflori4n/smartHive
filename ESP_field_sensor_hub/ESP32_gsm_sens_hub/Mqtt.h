@@ -1,88 +1,22 @@
-/**
- * Takes:
- *  - ref. to SIM7000 object
- *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
- *  - array of pointers to 'BasicHiveSensor's
- *  - number of p in pArray
- * Returns:
- *  -*- modifies string in mqttPayloadBuff
- *  
- * function gathers data from SIM9000 module, and reads Battery voltages + adds 'msg_id' to help keep track of msges
- * 
- * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
- */
-void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500]){
-  #define _TEMP_STRLEN 100
+void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTopic){
+  //char mqttPayloadBuffer[500] = "{";
   char tempStrBuffer[_TEMP_STRLEN];
-  static uint8_t msgId = 0;
-
-  msgId++;
-  mqttPayloadBuff[0] = '\0';
-  strcat(mqttPayloadBuff, "{"); 
-  /// Collect data and create mqtt frame
-  readVoltages();
-  addVoltageMqttTags(mqttPayloadBuff, tempStrBuffer);
-  getGNSSaGSMinfo(gsmModem, mqttPayloadBuff, tempStrBuffer);
-  
-  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)msgId);
-  strcat(mqttPayloadBuff, tempStrBuffer);
-  strcat(mqttPayloadBuff, " }\r");                                                                    /// !! the \r is very important, plese do not delete
-  Serial.println(mqttPayloadBuff);
-
-  /// TODO: should call mqtt send from here...
-}
-
-/**
- * Takes:
- *  - ref. to SIM7000 object
- *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
- *  - array of pointers to 'BasicHiveSensor's
- *  - number of p in pArray
- * Returns:
- *  -*- modifies string in mqttPayloadBuff
- *  
- * function gathers data from 'BasicHiveSensor' sensors and puts them into mqtt buffer
- * 
- * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
- */
-void sendMqttBHSensorMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500],BasicHiveSensor* pBHSensors[], uint8_t numOfBHSensors){
-  #define _TEMP_STRLEN 100
-  char tempStrBuffer[_TEMP_STRLEN];
-  static uint8_t msgId = 0;
-  msgId++;
-  mqttPayloadBuff[0] = '\0';
-  strcat(mqttPayloadBuff, "{"); 
-  /// Collect data and create mqtt frame
-  for(int i=0; i<numOfBHSensors; i++){
-    pBHSensors[i]->addMqttTags(mqttPayloadBuff, tempStrBuffer);
-  }
-
-  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)msgId);
-  strcat(mqttPayloadBuff, tempStrBuffer);
-  strcat(mqttPayloadBuff, " }\r");                                                                    /// !! the \r is very important, plese do not delete
-  Serial.println(mqttPayloadBuff);
-
-  /// TODO: should call mqtt send from here...
-}
-void sendHubStatusMqtt(SIM7000& gsmModem){
-  char mqttPayloadBuffer[500] = "{";
-  char tempStrBuffer[_TEMP_STRLEN];
-  char mqttTopic[] = "RTU0/RTU_INFO";
+  //char mqttTopic[] = "RTU0/RTU_INFO";
   char mqttTopicATCMD[100];
   unsigned int len = 5;
   int i = 0;
 
   /// Collect data and create mqtt frame
-  readVoltages();
-  addVoltageMqttTags(mqttPayloadBuffer, tempStrBuffer);
-  getGNSSaGSMinfo(gsmModem, mqttPayloadBuffer, tempStrBuffer);
+ // readVoltages();
+ // addVoltageMqttTags(mqttPayloadBuffer, tempStrBuffer);
+ // getGNSSaGSMinfo(gsmModem, mqttPayloadBuffer, tempStrBuffer);
   
-  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)random(0,255));
-  strcat(mqttPayloadBuffer, tempStrBuffer);
-  strcat(mqttPayloadBuffer, " }\r");                                                                    /// !! the \r is very important, plese do not delete
-  Serial.println(mqttPayloadBuffer);
+//  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)random(0,255));
+ // strcat(mqttPayloadBuffer, tempStrBuffer);
+//  strcat(mqttPayloadBuffer, " }\r");                                                                    /// !! the \r is very important, plese do not delete
+ // Serial.println(mqttPayloadBuffer);
 
-  return;
+ // return;
   
   for(i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
     if(gsmModem.atPrint("AT\r","OK",500) == 0){
@@ -123,15 +57,15 @@ void sendHubStatusMqtt(SIM7000& gsmModem){
     Serial.println("MQTT| probably not connected-server might be offline. ");
   }
 
-  snprintf(mqttTopicATCMD, sizeof(mqttTopicATCMD)/sizeof(char), "AT+SMPUB=\"%s\",\"%d\",1,1\r", mqttTopic, strlen(mqttPayloadBuffer));
+  snprintf(mqttTopicATCMD, sizeof(mqttTopicATCMD)/sizeof(char), "AT+SMPUB=\"%s\",\"%d\",1,1\r", mqttTopic, strlen(mqttPayloadBuff));
 
   Serial.print("MQTT| topic:");
   Serial.println(mqttTopicATCMD);
   Serial.print("MQTT| sending:");
-  Serial.println(mqttPayloadBuffer);
+  Serial.println(mqttPayloadBuff);
 
   gsmModem.atPrint(mqttTopicATCMD,">");
-  if(gsmModem.atPrint(mqttPayloadBuffer,"OK") == 0){
+  if(gsmModem.atPrint(mqttPayloadBuff,"OK") == 0){
     Serial.println("MQTT| sent. [ OK ]");
   } 
   else{
@@ -140,4 +74,72 @@ void sendHubStatusMqtt(SIM7000& gsmModem){
   gsmModem.atPrint("AT+SMDISC\r","OK"); 
  // gsmModem.atPrint("AT+SMDISC\r","OK");
  
+}
+/**
+ * Takes:
+ *  - ref. to SIM7000 object
+ *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
+ *  - array of pointers to 'BasicHiveSensor's
+ *  - number of p in pArray
+ * Returns:
+ *  -*- modifies string in mqttPayloadBuff
+ *  
+ * function gathers data from SIM9000 module, and reads Battery voltages + adds 'msg_id' to help keep track of msges
+ * 
+ * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
+ */
+void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* topicName){
+  #define _TEMP_STRLEN 100
+  char tempStrBuffer[_TEMP_STRLEN];
+  static uint8_t msgId = 0;
+
+  msgId++;
+  mqttPayloadBuff[0] = '\0';
+  strcat(mqttPayloadBuff, "{"); 
+  /// Collect data and create mqtt frame
+  readVoltages();
+  addVoltageMqttTags(mqttPayloadBuff, tempStrBuffer);
+  getGNSSaGSMinfo(gsmModem, mqttPayloadBuff, tempStrBuffer);
+  
+  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)msgId);
+  strcat(mqttPayloadBuff, tempStrBuffer);
+  strcat(mqttPayloadBuff, " }\r");                                                                    /// !! the \r is very important, plese do not delete
+  Serial.println(mqttPayloadBuff);
+
+  /// TODO: should call mqtt send from here...
+  sendMqtt(gsmModem,mqttPayloadBuff,topicName);
+}
+
+/**
+ * Takes:
+ *  - ref. to SIM7000 object
+ *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
+ *  - array of pointers to 'BasicHiveSensor's
+ *  - number of p in pArray
+ * Returns:
+ *  -*- modifies string in mqttPayloadBuff
+ *  
+ * function gathers data from 'BasicHiveSensor' sensors and puts them into mqtt buffer
+ * 
+ * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
+ */
+void sendMqttBHSensorMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500],const char* topicName, BasicHiveSensor* pBHSensors[], uint8_t numOfBHSensors){
+  #define _TEMP_STRLEN 100
+  char tempStrBuffer[_TEMP_STRLEN];
+  static uint8_t msgId = 0;
+  msgId++;
+  mqttPayloadBuff[0] = '\0';
+  strcat(mqttPayloadBuff, "{"); 
+  /// Collect data and create mqtt frame
+  for(int i=0; i<numOfBHSensors; i++){
+    pBHSensors[i]->addMqttTags(mqttPayloadBuff, tempStrBuffer);
+  }
+
+  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)msgId);
+  strcat(mqttPayloadBuff, tempStrBuffer);
+  strcat(mqttPayloadBuff, " }\r");                                                                    /// !! the \r is very important, plese do not delete
+  Serial.println(mqttPayloadBuff);
+
+  /// TODO: should call mqtt send from here...
+  sendMqtt(gsmModem,mqttPayloadBuff, topicName);
 }

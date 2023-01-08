@@ -2,11 +2,11 @@
  *  Functions for interfacing with a SIM 7000G chip, com uses hardware UART on the ESP32
  *  #include <HardwareSerial.h> is a dependency.
  */
-//#include <HardwareSerial.h>
-#include <SoftwareSerial.h>
+#include <HardwareSerial.h>   /// Can't use two software serial instances?
+//#include <SoftwareSerial.h>
 
-//HardwareSerial GSMModemSerial(2); // use UART2
-SoftwareSerial GSMModemSerial;
+HardwareSerial GSMModemSerial(2); // use UART2
+//SoftwareSerial GSMModemSerial;
 
 #define GSMBAUD 9600
 #define GSMRX_PIN 16
@@ -37,8 +37,8 @@ class SIM7000{
     }
     void init(){
        delay(1000);
-       GSMModemSerial.begin(9600, SWSERIAL_8N1, GSMRX_PIN, GSMTX_PIN, false);
-       //GSMModemSerial.begin(GSMBAUD, SERIAL_8N1, GSMRX_PIN, GSMTX_PIN);
+       //GSMModemSerial.begin(9600, SWSERIAL_8N1, GSMRX_PIN, GSMTX_PIN, false);
+       GSMModemSerial.begin(GSMBAUD, SERIAL_8N1, GSMRX_PIN, GSMTX_PIN);
        Serial.println("GSMModemSerial STARTED");
        delay(1000);
     }

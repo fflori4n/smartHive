@@ -27,10 +27,11 @@ BasicHiveSensor* bHSensList[2] = {&sensorA, &sensorB};
 
 void setup()  
 {
-  //simModem.begin(15200, SERIAL_8N1, 16, 17); 
+//  simModem.begin(15200, SERIAL_8N1, 16, 17); 
   Serial.begin(115200);
   Serial.println("hello serial");
   gsmModem.init();
+  delay(2000);
 
   /// pin for reading voltages
   pinMode(VPPIN, INPUT);
@@ -53,39 +54,19 @@ void loop()
   //delay(600000);
   //com485.sendDataPullMsg('A', 'B');
   
-  
-/*  com485.pollSensor((char)65, (char)70);
-  delay(1500);
-  Serial.println(com485.checkInbuf());
-  delay(10000);*/
-
-  /*com485.pollSensor((char)65,(char)70);
-  delay(2000);
-  com485.checkInbuf();
-  delay(5000);
-  com485.pollSensor((char)66,(char)70);
-  delay(2000);
-  com485.checkInbuf();
-  delay(5000);
-
-  delay(1000);*/
   sensorA.update();
   delay(2000);
   sensorB.update();
   delay(2000);
   
-  sendMqttStatusMsg(gsmModem,mqttPayloadBuff);
-  sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff, bHSensList, 2);
+  sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
+  sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
+  delay(60000 * 5);
   
   //sensorA.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
   //sensorB.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
   //Serial.println(mqttPayloadBuffer);
  // mqttPayloadBuffer = "";
   //sendHubStatusMqtt(gsmModem);
-  delay(20000);
-}
-
-int sendATCommand(const char* command, const char* response ){
-  
-
+  //delay(20000);
 }
