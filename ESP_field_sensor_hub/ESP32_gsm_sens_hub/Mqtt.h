@@ -16,7 +16,7 @@ void sendHubStatusMqtt(SIM7000& gsmModem){
   strcat(mqttPayloadBuffer, " }\r");                                                                    /// !! the \r is very important, plese do not delete
   Serial.println(mqttPayloadBuffer);
 
-  //return;
+  return;
   
   for(i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
     if(gsmModem.atPrint("AT\r","OK",500) == 0){

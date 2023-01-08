@@ -7,13 +7,14 @@
 #include "RS485Com.h"
 #include "BasicHiveSensor.h"
 
-
+char mqttPayloadBuffer[500] = "{";
+char tempStrBuffer[_TEMP_STRLEN];
 
 SIM7000 gsmModem = SIM7000();
 RS485Com com485 = RS485Com();
 
-BasicHiveSensor sensorA((char)65, com485);
-BasicHiveSensor sensorB((char)66, com485);
+BasicHiveSensor sensorA((char)65,"BHS_A", com485);
+BasicHiveSensor sensorB((char)66,"BHS_B", com485);
 
 
 void setup()  
@@ -63,6 +64,12 @@ void loop()
   sensorA.update();
   delay(2000);
   sensorB.update();
+  delay(2000);
+  sensorA.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
+  sensorB.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
+  Serial.println(mqttPayloadBuffer);
+ // mqttPayloadBuffer = "";
+  //sendHubStatusMqtt(gsmModem);
   delay(20000);
 }
 
