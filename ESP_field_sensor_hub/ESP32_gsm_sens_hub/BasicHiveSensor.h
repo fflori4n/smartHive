@@ -131,6 +131,9 @@ class BasicHiveSensor{
     char doubleConvBuff[15];
 
     for(int i=0; i<8; i++){
+      if(dhtCsvData[i] == -99.9){               /// do not send sensor data, if sensor is inactive
+        continue;
+      }
       doubleToStr(doubleConvBuff, dhtCsvData[i]);
       snprintf(tempStrBuffer, _TEMP_STRLEN, " \"%s_%s\":%s,",sensName, labels[i],doubleConvBuff);
       strlcat(mqttPayloadBuff, tempStrBuffer,500);

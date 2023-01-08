@@ -1,13 +1,16 @@
 #define _TEMP_STRLEN 100
 
+#include "RS485Com.h"
+#include "BasicHiveSensor.h"
 #include "sim7000.h"
 #include "sensHubInfo.h"
 #include "ReadVoltage.h"
 #include "Mqtt.h"
-#include "RS485Com.h"
-#include "BasicHiveSensor.h"
+
+
 
 char mqttPayloadBuffer[500] = "{";
+char mqttPayloadBuff[500] = "";
 char tempStrBuffer[_TEMP_STRLEN];
 
 SIM7000 gsmModem = SIM7000();
@@ -15,6 +18,11 @@ RS485Com com485 = RS485Com();
 
 BasicHiveSensor sensorA((char)65,"BHS_A", com485);
 BasicHiveSensor sensorB((char)66,"BHS_B", com485);
+
+
+BasicHiveSensor* bHSensList[2] = {&sensorA, &sensorB};
+
+
 
 
 void setup()  
@@ -65,9 +73,13 @@ void loop()
   delay(2000);
   sensorB.update();
   delay(2000);
-  sensorA.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
-  sensorB.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
-  Serial.println(mqttPayloadBuffer);
+  
+  sendMqttStatusMsg(gsmModem,mqttPayloadBuff);
+  sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff, bHSensList, 2);
+  
+  //sensorA.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
+  //sensorB.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
+  //Serial.println(mqttPayloadBuffer);
  // mqttPayloadBuffer = "";
   //sendHubStatusMqtt(gsmModem);
   delay(20000);
