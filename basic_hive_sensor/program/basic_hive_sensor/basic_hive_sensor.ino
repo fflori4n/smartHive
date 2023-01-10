@@ -22,8 +22,8 @@
 
 #define READGPIO9 (PINB  & B00000010)
 
-#define DHT0_TYPE DHT22
-#define DHT1_TYPE DHT22
+#define DHT0_TYPE DHT11
+//#define DHT1_TYPE DHT22
 //#define DHT2_TYPE DHT11
 
 #ifdef DHT0_TYPE
@@ -230,6 +230,7 @@ void loop() {
       motionCount = 0;
       timerSeconds = 0;
   }
+  //noInterrupts();
   while(serial.isAvailable() == 0){        
     if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){
       serial.respond2Poll();
@@ -239,6 +240,7 @@ void loop() {
     }
     delay(20);
   }
+  //interrupts();
   if(secondsSincePoll > ER_NOPOLL_SECONDS){
     noComError = true;
   }

@@ -7,7 +7,7 @@
 #define BAUD 9600
 
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
-#define THIS_DEV_ADDR 66
+#define THIS_DEV_ADDR 65
 #define MASTER_DEV_ADDR 70
 #define DEV_TYPE_CHAR 'A'
 
