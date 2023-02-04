@@ -7,6 +7,8 @@
 #include "ReadVoltage.h"
 #include "Mqtt.h"
 
+#define SENS_PWR_ON 23
+#define SENS_PWR_OFF 22
 
 
 char mqttPayloadBuffer[500] = "{";
@@ -38,10 +40,28 @@ void setup()
   analogSetWidth(11);
   analogReadResolution(11);
   /// \pin for reading voltages
+
+  pinMode(SENS_PWR_ON, OUTPUT);
+  pinMode(SENS_PWR_OFF, OUTPUT);
+  digitalWrite(SENS_PWR_ON, LOW);
+  digitalWrite(SENS_PWR_OFF, LOW);
   
   //Serial.println("GSM COM DUMP:");
  // sendHubStatusMqtt(gsmModem);
 } 
+
+void setSensorPwr(bool isON){
+  if(isON){
+    digitalWrite(SENS_PWR_ON, HIGH);
+    delayMicroseconds(100);
+    digitalWrite(SENS_PWR_ON, LOW);
+  }
+  else{
+    digitalWrite(SENS_PWR_OFF, HIGH);
+    delay(10);
+    digitalWrite(SENS_PWR_OFF, LOW);
+  }
+}
 void loop()  
 { 
  // readVoltages();
@@ -53,11 +73,13 @@ void loop()
   //sendHubStatusMqtt(gsmModem);
   //delay(600000);
   //com485.sendDataPullMsg('A', 'B');
-  
+
+  setSensorPwr(true);
   sensorA.update();
   delay(2000);
   sensorB.update();
   delay(2000);
+  setSensorPwr(false);
   
   sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
   sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
