@@ -1,4 +1,4 @@
-17018498687933555
+17021849736939555
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -75285,6 +75285,13 @@ varistor SIOV
 2
 2
 myComponents
+1N41_Diode
+Diode, DO-41_SOD81 series, Axial, Horizontal, pin pitch=10.16mm, , length*diameter=5.2*2.7mm^2, , http://www.diodes.com/_files/packages/DO-41%20(Plastic).pdf
+Diode DO-41_SOD81 series Axial Horizontal pin pitch 10.16mm  length 5.2mm diameter 2.7mm
+0
+2
+2
+myComponents
 4mmcableSteainRelief
 8-lead though-hole mounted DIP package, row spacing 7.62 mm (300 mils)
 THT DIP DIL PDIP 2.54mm 7.62mm 300mil
@@ -75536,6 +75543,13 @@ Through hole pin header THT 1x12 2.54mm single row
 0
 12
 12
+myComponents
+Potentiometer_ACP_CA9-V10_Vertical_Hole
+Potentiometer, vertical, shaft hole, ACP CA9-V10, http://www.acptechnologies.com/wp-content/uploads/2017/05/02-ACP-CA9-CE9.pdf
+Potentiometer vertical hole ACP CA9-V10
+0
+3
+3
 myComponents
 ProMiniCloneSocket
 
