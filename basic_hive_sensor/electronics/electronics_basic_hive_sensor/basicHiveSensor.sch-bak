@@ -509,17 +509,6 @@ Wire Wire Line
 	5550 4550 5675 4550
 Wire Wire Line
 	5675 4450 5550 4450
-$Comp
-L Switch:SW_Push_45deg SW2
-U 1 1 63566B63
-P 8050 2075
-F 0 "SW2" H 8050 2264 50  0000 C CNN
-F 1 "SW_Push_45deg" H 8050 2265 50  0001 C CNN
-F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 8050 2075 50  0001 C CNN
-F 3 "~" H 8050 2075 50  0001 C CNN
-	1    8050 2075
-	1    0    0    -1  
-$EndComp
 Text Label 6875 4250 0    50   ~ 0
 GPIO0
 Text Label 6875 4350 0    50   ~ 0
@@ -571,7 +560,6 @@ F 3 "~" H 7950 1700 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7950 1975 7950 1850
-Connection ~ 7950 1975
 Wire Wire Line
 	7950 1550 7950 1475
 Wire Wire Line
@@ -593,7 +581,7 @@ U 1 1 635D9D0F
 P 7300 2075
 F 0 "SW1" H 7300 2264 50  0000 C CNN
 F 1 "SW_Push_45deg" H 7300 2265 50  0001 C CNN
-F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 7300 2075 50  0001 C CNN
+F 2 "myComponents:SW520-D5.2P2.5" H 7300 2075 50  0001 C CNN
 F 3 "~" H 7300 2075 50  0001 C CNN
 	1    7300 2075
 	1    0    0    -1  
@@ -998,10 +986,10 @@ Wire Wire Line
 Wire Wire Line
 	2750 2875 2750 2150
 $Comp
-L Jumper:SolderJumper_2_Open JP?
+L Jumper:SolderJumper_2_Open JP1
 U 1 1 6365C9DE
 P 5050 5150
-F 0 "JP?" H 5050 5050 50  0000 C CNN
+F 0 "JP1" H 5050 5050 50  0000 C CNN
 F 1 "Sold" H 4750 5025 50  0001 C CNN
 F 2 "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" H 5050 5150 50  0001 C CNN
 F 3 "~" H 5050 5150 50  0001 C CNN
@@ -1011,10 +999,10 @@ $EndComp
 Wire Wire Line
 	5200 5150 5675 5150
 $Comp
-L power:+BATT #PWR?
+L power:+BATT #PWR0132
 U 1 1 6366784C
 P 4850 5150
-F 0 "#PWR?" H 4850 5000 50  0001 C CNN
+F 0 "#PWR0132" H 4850 5000 50  0001 C CNN
 F 1 "+BATT" H 4865 5323 50  0000 C CNN
 F 2 "" H 4850 5150 50  0001 C CNN
 F 3 "" H 4850 5150 50  0001 C CNN
@@ -1023,4 +1011,16 @@ F 3 "" H 4850 5150 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	4850 5150 4900 5150
+$Comp
+L Switch:SW_Push_45deg SW2
+U 1 1 6367F732
+P 8050 2075
+F 0 "SW2" H 8050 2264 50  0000 C CNN
+F 1 "SW_Push_45deg" H 8050 2265 50  0001 C CNN
+F 2 "myComponents:SW520-D5.2P2.5" H 8050 2075 50  0001 C CNN
+F 3 "~" H 8050 2075 50  0001 C CNN
+	1    8050 2075
+	1    0    0    -1  
+$EndComp
+Connection ~ 7950 1975
 $EndSCHEMATC

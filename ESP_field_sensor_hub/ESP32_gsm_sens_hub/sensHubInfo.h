@@ -38,7 +38,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
   uint8_t commaCount = 0;
   uint8_t prevCommaIndex = 0;
 
-  ///#define _GNSS_GSM_VERBOSE 1
+  #define _GNSS_GSM_VERBOSE 1
 
   wakeUpAT(gsmModem);
 

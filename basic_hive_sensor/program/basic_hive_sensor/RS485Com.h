@@ -7,7 +7,7 @@
 #define BAUD 9600
 
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
-#define THIS_DEV_ADDR 65
+#define THIS_DEV_ADDR 66
 #define MASTER_DEV_ADDR 70
 #define DEV_TYPE_CHAR 'A'
 
@@ -29,6 +29,7 @@ class RS485Com {
 #define STARTSTOP_BYTESNUM 3  /// 3 is minimum, because 2 could be the same as CRC16 bytes
 #define POLL_ALL "POL*"
 #define POLL_ALL_LEN (sizeof(POLL_ALL)/ sizeof(char) - 1)
+#define PRINT_RAW_CHARS
 
   private:
     char msgBuff[MSGBUFF_LEN];
@@ -96,6 +97,7 @@ class RS485Com {
     }
     
   public:
+    #define PRINT_RAW_CHARS 1
     RS485Com() {
       pinMode(DE_PIN, OUTPUT);
       digitalWrite(DE_PIN, LOW); /// Driver disabled - listening only

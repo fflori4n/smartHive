@@ -22,8 +22,8 @@
 
 #define READGPIO9 (PINB  & B00000010)
 
-#define DHT0_TYPE DHT11
-//#define DHT1_TYPE DHT22
+#define DHT0_TYPE DHT22
+#define DHT1_TYPE DHT22
 //#define DHT2_TYPE DHT11
 
 #ifdef DHT0_TYPE
@@ -60,7 +60,8 @@ SoftwareSerial Serial485 (RO_PIN, DI_PIN); // RX, TX
 RS485Com serial;
 
 void setup() {
-  Serial.begin(9600); 
+  Serial.begin(115200); 
+  Serial.println(("DBG_SER| Start."));
   #ifdef DHT0_TYPE
   pinMode(DHT0_PIN, INPUT_PULLUP);
   dht0.begin();
@@ -208,7 +209,7 @@ void loop() {
   goIdle();
  // Serial.println(F("Woke up."));
 
-  if(timerSeconds > DHTREAD_PERIOD_SECS){
+  /*if(timerSeconds > DHTREAD_PERIOD_SECS){
       Serial.println(F("reading DHT 60 sec"));
       #ifdef DHT0_TYPE
       readDHT(dht0, dht0Temp, dht0Humi);
@@ -229,7 +230,7 @@ void loop() {
       }
       motionCount = 0;
       timerSeconds = 0;
-  }
+  }*/
   //noInterrupts();
   while(serial.isAvailable() == 0){        
     if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){

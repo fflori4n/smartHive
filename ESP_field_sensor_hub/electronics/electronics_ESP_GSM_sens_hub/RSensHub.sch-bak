@@ -119,7 +119,7 @@ L Device:R R5
 U 1 1 636D3A5B
 P 7825 5475
 F 0 "R5" H 7650 5525 50  0000 L CNN
-F 1 "20M" H 7600 5425 50  0000 L CNN
+F 1 "10K" H 7600 5425 50  0000 L CNN
 F 2 "myComponents:resistor0.25,9mm" V 7755 5475 50  0001 C CNN
 F 3 "~" H 7825 5475 50  0001 C CNN
 	1    7825 5475
@@ -130,7 +130,7 @@ L Device:R R6
 U 1 1 636D671F
 P 7825 5875
 F 0 "R6" H 7650 5925 50  0000 L CNN
-F 1 "2M" H 7650 5825 50  0000 L CNN
+F 1 "1K" H 7650 5825 50  0000 L CNN
 F 2 "myComponents:resistor0.25,9mm" V 7755 5875 50  0001 C CNN
 F 3 "~" H 7825 5875 50  0001 C CNN
 	1    7825 5875
@@ -210,45 +210,16 @@ $EndComp
 Wire Wire Line
 	2200 3350 2125 3350
 Wire Wire Line
-	3000 3350 3450 3350
-Wire Wire Line
-	3450 3350 3450 3300
+	3150 3350 3150 3300
 $Comp
 L power:+5V #PWR0115
 U 1 1 636A3668
-P 3450 3300
-F 0 "#PWR0115" H 3450 3150 50  0001 C CNN
-F 1 "+5V" H 3465 3473 50  0000 C CNN
-F 2 "" H 3450 3300 50  0001 C CNN
-F 3 "" H 3450 3300 50  0001 C CNN
-	1    3450 3300
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:C C1
-U 1 1 636A4A02
-P 3450 3525
-F 0 "C1" H 3565 3571 50  0000 L CNN
-F 1 "C" H 3565 3480 50  0000 L CNN
-F 2 "myComponents:CAP_Radial_D10.0mm_P5.00mm" H 3488 3375 50  0001 C CNN
-F 3 "~" H 3450 3525 50  0001 C CNN
-	1    3450 3525
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3450 3375 3450 3350
-Connection ~ 3450 3350
-Wire Wire Line
-	3450 3675 3450 3725
-$Comp
-L power:GND #PWR0116
-U 1 1 636A7644
-P 3450 3725
-F 0 "#PWR0116" H 3450 3475 50  0001 C CNN
-F 1 "GND" H 3455 3552 50  0000 C CNN
-F 2 "" H 3450 3725 50  0001 C CNN
-F 3 "" H 3450 3725 50  0001 C CNN
-	1    3450 3725
+P 3150 3300
+F 0 "#PWR0115" H 3150 3150 50  0001 C CNN
+F 1 "+5V" H 3165 3473 50  0000 C CNN
+F 2 "" H 3150 3300 50  0001 C CNN
+F 3 "" H 3150 3300 50  0001 C CNN
+	1    3150 3300
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -256,11 +227,11 @@ Wire Wire Line
 Wire Wire Line
 	2125 3725 2125 3450
 $Comp
-L Device:R R8
+L Device:R FUSE1
 U 1 1 636C3BB0
 P 1725 3150
-F 0 "R8" H 1655 3104 50  0000 R CNN
-F 1 "R0" H 1655 3195 50  0000 R CNN
+F 0 "FUSE1" H 1655 3104 50  0000 R CNN
+F 1 "0R" H 1655 3195 50  0000 R CNN
 F 2 "myComponents:resistor0.25,9mm" V 1655 3150 50  0001 C CNN
 F 3 "~" H 1725 3150 50  0001 C CNN
 	1    1725 3150
@@ -288,7 +259,7 @@ L Device:R R9
 U 1 1 636E97EA
 P 8025 5475
 F 0 "R9" H 8095 5521 50  0000 L CNN
-F 1 "20M" H 8095 5430 50  0000 L CNN
+F 1 "10K" H 8095 5430 50  0000 L CNN
 F 2 "myComponents:resistor0.25,9mm" V 7955 5475 50  0001 C CNN
 F 3 "~" H 8025 5475 50  0001 C CNN
 	1    8025 5475
@@ -299,7 +270,7 @@ L Device:R R10
 U 1 1 636E97F0
 P 8025 5875
 F 0 "R10" H 8095 5921 50  0000 L CNN
-F 1 "2M" H 8095 5830 50  0000 L CNN
+F 1 "1K" H 8095 5830 50  0000 L CNN
 F 2 "myComponents:resistor0.25,9mm" V 7955 5875 50  0001 C CNN
 F 3 "~" H 8025 5875 50  0001 C CNN
 	1    8025 5875
@@ -419,17 +390,6 @@ Text Label 9225 2800 2    50   ~ 0
 UART2_DRIVER
 Wire Wire Line
 	10275 3000 10375 3000
-$Comp
-L power:GND #PWR0101
-U 1 1 63671AD2
-P 10375 3000
-F 0 "#PWR0101" H 10375 2750 50  0001 C CNN
-F 1 "GND" H 10380 2827 50  0000 C CNN
-F 2 "" H 10375 3000 50  0001 C CNN
-F 3 "" H 10375 3000 50  0001 C CNN
-	1    10375 3000
-	-1   0    0    -1  
-$EndComp
 Wire Wire Line
 	10375 2650 10375 2700
 Wire Wire Line
@@ -473,10 +433,10 @@ F 3 "~" H 800 1800 50  0001 C CNN
 	1    800  1800
 	-1   0    0    1   
 $EndComp
-Text Label 1175 1600 0    50   ~ 0
+Text Label 1175 1900 0    50   ~ 0
 V_SOLAR
 Wire Wire Line
-	1175 1600 1000 1600
+	1175 1900 1000 1900
 Text Label 9250 3100 2    50   ~ 0
 COM_OUT_LED
 Wire Wire Line
@@ -656,35 +616,35 @@ Wire Wire Line
 $Comp
 L Jumper:Jumper_2_Bridged JP5
 U 1 1 63C3097D
-P 9775 3400
-F 0 "JP5" H 9725 3475 50  0000 L CNN
-F 1 "RS485 terminator" H 9275 3250 50  0001 L CNN
-F 2 "myComponents:jumperx2_P2.54mm_widePads" H 9775 3400 50  0001 C CNN
-F 3 "~" H 9775 3400 50  0001 C CNN
-	1    9775 3400
+P 9500 3425
+F 0 "JP5" H 9450 3500 50  0000 L CNN
+F 1 "RS485 terminator" H 9000 3275 50  0001 L CNN
+F 2 "myComponents:jumperx2_P2.54mm_widePads" H 9500 3425 50  0001 C CNN
+F 3 "~" H 9500 3425 50  0001 C CNN
+	1    9500 3425
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:R R19
 U 1 1 63C5E5F0
-P 9350 3400
-F 0 "R19" H 9420 3446 50  0000 L CNN
-F 1 "120" H 9420 3355 50  0000 L CNN
-F 2 "myComponents:resistor0.25,9mm" V 9280 3400 50  0001 C CNN
-F 3 "~" H 9350 3400 50  0001 C CNN
-	1    9350 3400
+P 9075 3425
+F 0 "R19" H 9145 3471 50  0000 L CNN
+F 1 "120" H 9145 3380 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 9005 3425 50  0001 C CNN
+F 3 "~" H 9075 3425 50  0001 C CNN
+	1    9075 3425
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	9575 3400 9500 3400
-Text Label 10075 3400 0    50   ~ 0
+	9300 3425 9225 3425
+Text Label 9800 3425 0    50   ~ 0
 RS485_A
-Text Label 9125 3400 2    50   ~ 0
+Text Label 8850 3425 2    50   ~ 0
 RS485_B
 Wire Wire Line
-	9125 3400 9200 3400
+	8850 3425 8925 3425
 Wire Wire Line
-	10075 3400 9975 3400
+	9800 3425 9700 3425
 $Comp
 L Device:C C3
 U 1 1 63CE8395
@@ -756,26 +716,8 @@ Wire Wire Line
 Connection ~ 10700 2900
 Wire Wire Line
 	10700 2900 10750 2900
-$Comp
-L power:GND #PWR0108
-U 1 1 63C2E9B2
-P 10600 3675
-F 0 "#PWR0108" H 10600 3425 50  0001 C CNN
-F 1 "GND" H 10605 3502 50  0000 C CNN
-F 2 "" H 10600 3675 50  0001 C CNN
-F 3 "" H 10600 3675 50  0001 C CNN
-	1    10600 3675
-	-1   0    0    -1  
-$EndComp
-Wire Wire Line
-	10700 3650 10600 3650
-Wire Wire Line
-	10600 3650 10600 3675
 Wire Wire Line
 	10525 3375 10525 3650
-Wire Wire Line
-	10525 3650 10600 3650
-Connection ~ 10600 3650
 Wire Wire Line
 	10625 5700 10575 5700
 Wire Wire Line
@@ -847,19 +789,7 @@ F 3 "" H 10575 4750 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	10225 4050 9775 4050
-Wire Wire Line
-	9775 4050 9775 4825
-Wire Wire Line
-	10225 4225 9875 4225
-Wire Wire Line
-	9875 4225 9875 4825
-Wire Wire Line
-	9975 4400 9975 4825
-Wire Wire Line
 	10075 4575 10075 4825
-Wire Wire Line
-	10225 4400 9975 4400
 $Comp
 L Device:R R18
 U 1 1 63DA4224
@@ -941,100 +871,6 @@ Text Label 3200 1625 3    50   ~ 0
 SAFE_BAT+
 Text Label 4250 1625 3    50   ~ 0
 SAFE_BAT+
-$Comp
-L Isolator:PC817 U12
-U 1 1 63EDD277
-P 2900 5800
-F 0 "U12" H 2900 6125 50  0000 C CNN
-F 1 "PC817" H 2900 6034 50  0000 C CNN
-F 2 "myComponents:optoCouplerDIP4" H 2700 5600 50  0001 L CIN
-F 3 "http://www.soselectronic.cz/a_info/resource/d/pc817.pdf" H 2900 5800 50  0001 L CNN
-	1    2900 5800
-	-1   0    0    -1  
-$EndComp
-$Comp
-L Device:R R17
-U 1 1 63F1297F
-P 2550 6925
-F 0 "R17" H 2620 6971 50  0000 L CNN
-F 1 "100K" H 2620 6880 50  0000 L CNN
-F 2 "myComponents:resistor0.25,9mm" V 2480 6925 50  0001 C CNN
-F 3 "~" H 2550 6925 50  0001 C CNN
-	1    2550 6925
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R28
-U 1 1 6414F787
-P 3400 5900
-F 0 "R28" H 3470 5946 50  0000 L CNN
-F 1 "1K" H 3470 5855 50  0000 L CNN
-F 2 "myComponents:resistor0.25,9mm" V 3330 5900 50  0001 C CNN
-F 3 "~" H 3400 5900 50  0001 C CNN
-	1    3400 5900
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	2550 5900 2600 5900
-Wire Wire Line
-	3200 5225 3200 5700
-$Comp
-L power:GND #PWR0105
-U 1 1 6454B5C4
-P 3600 7150
-F 0 "#PWR0105" H 3600 6900 50  0001 C CNN
-F 1 "GND" H 3605 6977 50  0000 C CNN
-F 2 "" H 3600 7150 50  0001 C CNN
-F 3 "" H 3600 7150 50  0001 C CNN
-	1    3600 7150
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:+BATT #PWR0106
-U 1 1 6454EAD6
-P 3200 5175
-F 0 "#PWR0106" H 3200 5025 50  0001 C CNN
-F 1 "+BATT" H 3215 5348 50  0000 C CNN
-F 2 "" H 3200 5175 50  0001 C CNN
-F 3 "" H 3200 5175 50  0001 C CNN
-	1    3200 5175
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R13
-U 1 1 63F73D75
-P 1675 6800
-F 0 "R13" H 1745 6846 50  0000 L CNN
-F 1 "330R" H 1745 6755 50  0000 L CNN
-F 2 "myComponents:resistor0.25,9mm" V 1605 6800 50  0001 C CNN
-F 3 "~" H 1675 6800 50  0001 C CNN
-	1    1675 6800
-	-1   0    0    1   
-$EndComp
-Text Label 1700 6300 2    50   ~ 0
-Vout_OFF
-$Comp
-L power:GND #PWR0140
-U 1 1 641002EE
-P 2550 7150
-F 0 "#PWR0140" H 2550 6900 50  0001 C CNN
-F 1 "GND" H 2555 6977 50  0000 C CNN
-F 2 "" H 2550 7150 50  0001 C CNN
-F 3 "" H 2550 7150 50  0001 C CNN
-	1    2550 7150
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R29
-U 1 1 63F41615
-P 3225 6550
-F 0 "R29" H 3295 6596 50  0000 L CNN
-F 1 "1K" H 3295 6505 50  0000 L CNN
-F 2 "myComponents:resistor0.25,9mm" V 3155 6550 50  0001 C CNN
-F 3 "~" H 3225 6550 50  0001 C CNN
-	1    3225 6550
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	7825 6250 7825 6150
 $Comp
@@ -1101,202 +937,9 @@ Wire Wire Line
 	9375 4650 9200 4650
 Wire Wire Line
 	9275 4750 9200 4750
-$Comp
-L Transistor_FET:IRF540N Q4
-U 1 1 63EF9304
-P 3500 6300
-F 0 "Q4" H 3704 6346 50  0000 L CNN
-F 1 "IRF540N" H 3704 6255 50  0000 L CNN
-F 2 "myComponents:TO-220-3_Horizontal_TabDown_bothSides" H 3750 6225 50  0001 L CIN
-F 3 "http://www.irf.com/product-info/datasheets/data/irf540n.pdf" H 3500 6300 50  0001 L CNN
-	1    3500 6300
-	1    0    0    -1  
-$EndComp
-Text Label 1700 5700 2    50   ~ 0
-Vout_ON
-$Comp
-L Device:R R12
-U 1 1 63FCE1BE
-P 1325 6800
-F 0 "R12" H 1395 6846 50  0000 L CNN
-F 1 "330R" H 1395 6755 50  0000 L CNN
-F 2 "myComponents:resistor0.25,9mm" V 1255 6800 50  0001 C CNN
-F 3 "~" H 1325 6800 50  0001 C CNN
-	1    1325 6800
-	-1   0    0    1   
-$EndComp
-$Comp
-L Isolator:PC817 U10
-U 1 1 63DCE4BA
-P 2025 5800
-F 0 "U10" H 2025 6125 50  0000 C CNN
-F 1 "PC817" H 2025 6034 50  0000 C CNN
-F 2 "myComponents:optoCouplerDIP4" H 1825 5600 50  0001 L CIN
-F 3 "http://www.soselectronic.cz/a_info/resource/d/pc817.pdf" H 2025 5800 50  0001 L CNN
-	1    2025 5800
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2325 5700 2450 5700
-$Comp
-L Device:R R14
-U 1 1 63EDD7DE
-P 2450 5450
-F 0 "R14" H 2520 5496 50  0000 L CNN
-F 1 "1K" H 2520 5405 50  0000 L CNN
-F 2 "myComponents:resistor0.25,9mm" V 2380 5450 50  0001 C CNN
-F 3 "~" H 2450 5450 50  0001 C CNN
-	1    2450 5450
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2550 5900 2550 6300
-Wire Wire Line
-	2325 5900 2375 5900
-Wire Wire Line
-	2375 5900 2375 6300
-Wire Wire Line
-	2375 6300 2325 6300
-Wire Wire Line
-	2375 6300 2550 6300
-Connection ~ 2375 6300
-Connection ~ 2550 6300
-Wire Wire Line
-	2450 5600 2450 5700
-Connection ~ 2450 5700
-Wire Wire Line
-	2450 5700 2600 5700
-Wire Wire Line
-	2450 5300 2450 5225
-Wire Wire Line
-	2450 5225 3200 5225
-Wire Wire Line
-	2325 6500 2375 6500
-Wire Wire Line
-	3550 5900 3600 5900
-Wire Wire Line
-	3600 5900 3600 6100
-Wire Wire Line
-	3250 5900 3200 5900
-Wire Wire Line
-	2550 7150 2550 7100
-Connection ~ 2550 7100
-Wire Wire Line
-	2550 7100 2550 7075
-Connection ~ 2375 7100
-Wire Wire Line
-	2375 7100 2550 7100
-Wire Wire Line
-	2375 6500 2375 7100
-Wire Wire Line
-	3225 6300 3225 6400
-Text Label 3225 6775 3    50   ~ 0
-VBUS_LED
-Wire Wire Line
-	3225 6775 3225 6700
-$Comp
-L Jumper:SolderJumper_2_Open JP6
-U 1 1 644467F2
-P 2975 6550
-F 0 "JP6" V 2975 6618 50  0000 L CNN
-F 1 "SolderJumper_2_Open" H 2975 6664 50  0001 C CNN
-F 2 "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" H 2975 6550 50  0001 C CNN
-F 3 "~" H 2975 6550 50  0001 C CNN
-	1    2975 6550
-	0    1    -1   0   
-$EndComp
-Wire Wire Line
-	2550 6300 2750 6300
-Connection ~ 3225 6300
-Wire Wire Line
-	3225 6300 3300 6300
-Wire Wire Line
-	3200 5175 3200 5225
-Connection ~ 3200 5225
-Wire Wire Line
-	3600 6500 3600 7150
-Text Label 3700 5225 0    50   ~ 0
-SAFE_BAT+
-Text Label 3700 5400 0    50   ~ 0
-SAFE_BAT_GND
-Wire Wire Line
-	3700 5400 3600 5400
-Wire Wire Line
-	3600 5400 3600 5900
-Connection ~ 3600 5900
-Wire Wire Line
-	3200 5225 3700 5225
-Text Label 2500 1625 3    50   ~ 0
-SAFE_BAT_GND
-Text Label 3550 1625 3    50   ~ 0
-SAFE_BAT_GND
-Wire Wire Line
-	1675 6500 1725 6500
-Wire Wire Line
-	1675 7100 2375 7100
-Wire Wire Line
-	1325 7100 1675 7100
-Connection ~ 1675 7100
-$Comp
-L Isolator:PC817 U11
-U 1 1 63CF08FE
-P 2025 6400
-F 0 "U11" H 2025 6725 50  0000 C CNN
-F 1 "PC817" H 2025 6634 50  0000 C CNN
-F 2 "myComponents:optoCouplerDIP4" H 1825 6200 50  0001 L CIN
-F 3 "http://www.soselectronic.cz/a_info/resource/d/pc817.pdf" H 2025 6400 50  0001 L CNN
-	1    2025 6400
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	1675 6650 1675 6500
-Wire Wire Line
-	1675 6950 1675 7100
-Wire Wire Line
-	1325 6950 1325 7100
-Wire Wire Line
-	1325 6650 1325 5900
-Wire Wire Line
-	1325 5900 1725 5900
-Wire Wire Line
-	1700 6300 1725 6300
-Wire Wire Line
-	1700 5700 1725 5700
-$Comp
-L Device:R_POT RV1
-U 1 1 63DF64FA
-P 2550 6550
-F 0 "RV1" V 2450 6625 50  0000 R CNN
-F 1 "R_POT" H 2850 6475 50  0000 R CNN
-F 2 "myComponents:Potentiometer_ACP_CA9-V10_Vertical_Hole" H 2550 6550 50  0001 C CNN
-F 3 "~" H 2550 6550 50  0001 C CNN
-	1    2550 6550
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2700 6550 2750 6550
-Wire Wire Line
-	2750 6550 2750 6300
-Connection ~ 2750 6300
-Wire Wire Line
-	2750 6300 2975 6300
-Wire Wire Line
-	2550 6700 2550 6750
-Wire Wire Line
-	2975 6400 2975 6300
-Connection ~ 2975 6300
-Wire Wire Line
-	2975 6300 3225 6300
-Wire Wire Line
-	2975 6700 2975 6750
-Wire Wire Line
-	2975 6750 2550 6750
-Connection ~ 2550 6750
-Wire Wire Line
-	2550 6750 2550 6775
-Text Label 7825 1850 0    50   ~ 0
-Vout_ON
 Text Label 7825 1750 0    50   ~ 0
+Vout_ON
+Text Label 7825 1850 0    50   ~ 0
 Vout_OFF
 Wire Wire Line
 	7500 1850 7825 1850
@@ -1382,16 +1025,16 @@ $EndComp
 $Comp
 L power:+BATT #PWR0130
 U 1 1 63985720
-P 1175 1900
-F 0 "#PWR0130" H 1175 1750 50  0001 C CNN
-F 1 "+BATT" H 1190 2073 50  0000 C CNN
-F 2 "" H 1175 1900 50  0001 C CNN
-F 3 "" H 1175 1900 50  0001 C CNN
-	1    1175 1900
+P 1575 1600
+F 0 "#PWR0130" H 1575 1450 50  0001 C CNN
+F 1 "+BATT" V 1575 1850 50  0000 C CNN
+F 2 "" H 1575 1600 50  0001 C CNN
+F 3 "" H 1575 1600 50  0001 C CNN
+	1    1575 1600
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	1175 1900 1000 1900
+	1175 1600 1000 1600
 Wire Wire Line
 	1000 1700 1150 1700
 Wire Wire Line
@@ -1403,4 +1046,368 @@ Wire Wire Line
 Connection ~ 1150 1700
 Wire Wire Line
 	1150 1700 1550 1700
+Wire Wire Line
+	3000 3350 3150 3350
+Wire Wire Line
+	6250 1750 5975 1750
+Text Label 5975 1750 2    50   ~ 0
+EN
+Wire Wire Line
+	10700 3650 10525 3650
+Wire Wire Line
+	10375 3650 10525 3650
+Wire Wire Line
+	10375 3000 10375 3650
+Connection ~ 10525 3650
+Wire Wire Line
+	10525 3750 10525 3650
+$Comp
+L power:GND #PWR0101
+U 1 1 6409354B
+P 10525 3750
+F 0 "#PWR0101" H 10525 3500 50  0001 C CNN
+F 1 "GND" H 10530 3577 50  0000 C CNN
+F 2 "" H 10525 3750 50  0001 C CNN
+F 3 "" H 10525 3750 50  0001 C CNN
+	1    10525 3750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R11
+U 1 1 63FD7026
+P 3425 5800
+F 0 "R11" H 3495 5846 50  0000 L CNN
+F 1 "1K" H 3495 5755 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 3355 5800 50  0001 C CNN
+F 3 "~" H 3425 5800 50  0001 C CNN
+	1    3425 5800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR0105
+U 1 1 63FD7034
+P 3425 4625
+F 0 "#PWR0105" H 3425 4475 50  0001 C CNN
+F 1 "+BATT" H 3440 4798 50  0000 C CNN
+F 2 "" H 3425 4625 50  0001 C CNN
+F 3 "" H 3425 4625 50  0001 C CNN
+	1    3425 4625
+	1    0    0    -1  
+$EndComp
+Text Label 1950 6025 2    50   ~ 0
+Vout_ON
+$Comp
+L Device:R R4
+U 1 1 63FD7061
+P 2675 5700
+F 0 "R4" H 2745 5746 50  0000 L CNN
+F 1 "1K" H 2745 5655 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 2605 5700 50  0001 C CNN
+F 3 "~" H 2675 5700 50  0001 C CNN
+	1    2675 5700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3425 4625 3425 4675
+$Comp
+L Isolator:PC817 U7
+U 1 1 63FD7094
+P 2275 6125
+F 0 "U7" H 2275 6450 50  0000 C CNN
+F 1 "PC817" H 2275 6359 50  0000 C CNN
+F 2 "myComponents:optoCouplerDIP4" H 2075 5925 50  0001 L CIN
+F 3 "http://www.soselectronic.cz/a_info/resource/d/pc817.pdf" H 2275 6125 50  0001 L CNN
+	1    2275 6125
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1950 6025 1975 6025
+$Comp
+L Device:R R7
+U 1 1 645CB593
+P 2900 5350
+F 0 "R7" H 2970 5396 50  0000 L CNN
+F 1 "100" H 2970 5305 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 2830 5350 50  0001 C CNN
+F 3 "~" H 2900 5350 50  0001 C CNN
+	1    2900 5350
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0106
+U 1 1 6462142F
+P 2675 6900
+F 0 "#PWR0106" H 2675 6650 50  0001 C CNN
+F 1 "GND" H 2680 6727 50  0000 C CNN
+F 2 "" H 2675 6900 50  0001 C CNN
+F 3 "" H 2675 6900 50  0001 C CNN
+	1    2675 6900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R12
+U 1 1 63FD7047
+P 3700 5800
+F 0 "R12" H 3770 5846 50  0000 L CNN
+F 1 "1K" H 3770 5755 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 3630 5800 50  0001 C CNN
+F 3 "~" H 3700 5800 50  0001 C CNN
+	1    3700 5800
+	1    0    0    -1  
+$EndComp
+Text Label 3700 6025 3    50   ~ 0
+VBUS_LED
+Wire Wire Line
+	3700 6025 3700 5950
+Wire Wire Line
+	3375 6225 3425 6225
+$Comp
+L Isolator:PC817 U8
+U 1 1 63FD701A
+P 3075 6125
+F 0 "U8" H 3075 6450 50  0000 C CNN
+F 1 "PC817" H 3075 6359 50  0000 C CNN
+F 2 "myComponents:optoCouplerDIP4" H 2875 5925 50  0001 L CIN
+F 3 "http://www.soselectronic.cz/a_info/resource/d/pc817.pdf" H 3075 6125 50  0001 L CNN
+	1    3075 6125
+	-1   0    0    -1  
+$EndComp
+Connection ~ 2675 6900
+Wire Wire Line
+	1900 6225 1975 6225
+Connection ~ 2675 5350
+Wire Wire Line
+	3425 5950 3425 6025
+Wire Wire Line
+	3425 6025 3375 6025
+Wire Wire Line
+	3425 5550 3425 5600
+Wire Wire Line
+	3425 5600 3700 5600
+Connection ~ 3425 5600
+Wire Wire Line
+	3425 5600 3425 5650
+Wire Wire Line
+	3700 5600 3700 5650
+Connection ~ 3700 5600
+Wire Wire Line
+	3700 5600 3925 5600
+Wire Wire Line
+	2750 5350 2675 5350
+Wire Wire Line
+	3050 5350 3125 5350
+Connection ~ 3425 4675
+$Comp
+L Device:R R3
+U 1 1 641A3130
+P 2675 5000
+F 0 "R3" H 2745 5046 50  0000 L CNN
+F 1 "1K" H 2745 4955 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 2605 5000 50  0001 C CNN
+F 3 "~" H 2675 5000 50  0001 C CNN
+	1    2675 5000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2575 6025 2675 6025
+Wire Wire Line
+	2675 5850 2675 6025
+Connection ~ 2675 6025
+Wire Wire Line
+	2675 6025 2775 6025
+Wire Wire Line
+	2675 5550 2675 5350
+$Comp
+L Device:Q_PMOS_GDS Q1
+U 1 1 63FD70EC
+P 3325 5350
+F 0 "Q1" H 3530 5304 50  0000 L CNN
+F 1 "IRF9540" H 3530 5395 50  0000 L CNN
+F 2 "myComponents:TO-220-3_Horizontal_TabDown_bothSides" H 3525 5450 50  0001 C CNN
+F 3 "~" H 3325 5350 50  0001 C CNN
+	1    3325 5350
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	2575 6225 2675 6225
+$Comp
+L Device:R R2
+U 1 1 64C1C9D4
+P 1900 6575
+F 0 "R2" H 1970 6621 50  0000 L CNN
+F 1 "330R" H 1970 6530 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 1830 6575 50  0001 C CNN
+F 3 "~" H 1900 6575 50  0001 C CNN
+	1    1900 6575
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1900 6725 1900 6900
+Wire Wire Line
+	1900 6225 1900 6425
+$Comp
+L Device:R R1
+U 1 1 64C34274
+P 1550 6575
+F 0 "R1" H 1620 6621 50  0000 L CNN
+F 1 "330R" H 1620 6530 50  0000 L CNN
+F 2 "myComponents:resistor0.25,9mm" V 1480 6575 50  0001 C CNN
+F 3 "~" H 1550 6575 50  0001 C CNN
+	1    1550 6575
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1550 6725 1550 6900
+Wire Wire Line
+	1550 5350 1550 6425
+Wire Wire Line
+	1550 6900 1900 6900
+Connection ~ 1900 6900
+Wire Wire Line
+	1900 6900 2675 6900
+Wire Wire Line
+	2675 6225 2675 6900
+Connection ~ 2675 6225
+Wire Wire Line
+	2675 6225 2775 6225
+Wire Wire Line
+	3425 4675 3425 5150
+Wire Wire Line
+	1775 5150 1800 5150
+$Comp
+L Isolator:PC817 U5
+U 1 1 63FD705A
+P 2100 5250
+F 0 "U5" H 2100 5575 50  0000 C CNN
+F 1 "PC817" H 2100 5484 50  0000 C CNN
+F 2 "myComponents:optoCouplerDIP4" H 1900 5050 50  0001 L CIN
+F 3 "http://www.soselectronic.cz/a_info/resource/d/pc817.pdf" H 2100 5250 50  0001 L CNN
+	1    2100 5250
+	1    0    0    -1  
+$EndComp
+Text Label 1775 5150 2    50   ~ 0
+Vout_OFF
+Wire Wire Line
+	1550 5350 1800 5350
+Wire Wire Line
+	2400 5350 2675 5350
+Wire Wire Line
+	2400 5150 2400 4675
+Wire Wire Line
+	2400 4675 2675 4675
+Wire Wire Line
+	2675 5150 2675 5350
+Wire Wire Line
+	2675 4850 2675 4675
+Connection ~ 2675 4675
+Wire Wire Line
+	2675 4675 3425 4675
+Text Label 4000 5600 0    50   ~ 0
+SAFE_BAT+
+$Comp
+L Jumper:SolderJumper_2_Open JP6
+U 1 1 6501C8D1
+P 3075 6575
+F 0 "JP6" V 3075 6643 50  0001 L CNN
+F 1 "SolderJumper_2_Open" H 3075 6689 50  0001 C CNN
+F 2 "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" H 3075 6575 50  0001 C CNN
+F 3 "~" H 3075 6575 50  0001 C CNN
+	1    3075 6575
+	0    1    -1   0   
+$EndComp
+$Comp
+L Device:R_POT RV1
+U 1 1 640258D0
+P 3425 6900
+F 0 "RV1" V 3325 6975 50  0000 R CNN
+F 1 "10K" V 3550 6850 50  0000 R CNN
+F 2 "myComponents:Potentiometer_ACP_CA9-V10_Vertical_Hole" H 3425 6900 50  0001 C CNN
+F 3 "~" H 3425 6900 50  0001 C CNN
+	1    3425 6900
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3425 6225 3425 6375
+Wire Wire Line
+	2675 6900 3075 6900
+Wire Wire Line
+	3075 6725 3075 6900
+Connection ~ 3075 6900
+Wire Wire Line
+	3075 6900 3275 6900
+Wire Wire Line
+	3075 6425 3075 6375
+Wire Wire Line
+	3075 6375 3425 6375
+Connection ~ 3425 6375
+Wire Wire Line
+	3425 6375 3425 6750
+$Comp
+L Device:R FUSE2
+U 1 1 652385E6
+P 1325 1600
+F 0 "FUSE2" H 1255 1554 50  0000 R CNN
+F 1 "0R" H 1255 1645 50  0000 R CNN
+F 2 "myComponents:resistor0.25,9mm" V 1255 1600 50  0001 C CNN
+F 3 "~" H 1325 1600 50  0001 C CNN
+	1    1325 1600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1575 1600 1475 1600
+$Comp
+L power:GND #PWR?
+U 1 1 652CFA3B
+P 2500 1625
+F 0 "#PWR?" H 2500 1375 50  0001 C CNN
+F 1 "GND" H 2505 1452 50  0000 C CNN
+F 2 "" H 2500 1625 50  0001 C CNN
+F 3 "" H 2500 1625 50  0001 C CNN
+	1    2500 1625
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 652D1F9E
+P 3550 1625
+F 0 "#PWR?" H 3550 1375 50  0001 C CNN
+F 1 "GND" H 3555 1452 50  0000 C CNN
+F 2 "" H 3550 1625 50  0001 C CNN
+F 3 "" H 3550 1625 50  0001 C CNN
+	1    3550 1625
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x02_Male J?
+U 1 1 6403466D
+P 4200 6100
+F 0 "J?" H 4172 6028 50  0000 R CNN
+F 1 "Conn_01x02_Male" H 4172 6073 50  0001 R CNN
+F 2 "myComponents:TerminalBlockRemovablex2" H 4200 6100 50  0001 C CNN
+F 3 "~" H 4200 6100 50  0001 C CNN
+	1    4200 6100
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4000 6000 3925 6000
+Wire Wire Line
+	3925 6000 3925 5600
+Connection ~ 3925 5600
+Wire Wire Line
+	3925 5600 4000 5600
+$Comp
+L power:GND #PWR?
+U 1 1 64057F24
+P 3925 6175
+F 0 "#PWR?" H 3925 5925 50  0001 C CNN
+F 1 "GND" H 3930 6002 50  0000 C CNN
+F 2 "" H 3925 6175 50  0001 C CNN
+F 3 "" H 3925 6175 50  0001 C CNN
+	1    3925 6175
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3925 6175 3925 6100
+Wire Wire Line
+	3925 6100 4000 6100
 $EndSCHEMATC
