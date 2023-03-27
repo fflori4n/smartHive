@@ -40,6 +40,86 @@ class SIM7000 {
       return methodSig;
     }
 
+    char* getDataStr(byte tag, bool querry = false) {
+
+      /*
+         +CGNSINF: 1,1,20230327212102.000,46.103447,19.635575,132.200,0.00,356.7,1,,1.0,1.4,0.9,,22,7,1,,32,,
+          1 - RUN STATUS
+          2 - FIX STATUS
+          3 - UTC TIME
+          4 - LATITUDE
+          5 - LONGITUDE
+          6 - MASL METERS
+          7 - GROUND SPEED
+          8 - CURSE
+          9 - FIX MODE
+          10 - NOT USED
+          11 - HDOP
+          12 - PDOP
+          13 - VDOP
+          14 - RESERVED
+          15 - GNSS Satellites in View
+          16 - GPS Satellites Used
+          17 - GLONASS Satellites used
+          18 - Reserved3
+          19 - C/N0 max
+          20 - HPA
+          21 - VPA
+      */
+
+      #define NMEA_BUFF_LEN 200
+      static char nMEARespBUff[NMEA_BUFF_LEN];
+      char* nMEAResponseString = nMEARespBUff;
+
+      if (querry) {
+
+        #define RESP_KEY "+CGNSINF:"
+        #define RESP_KEY_LEN 10 ///sizeof(RESP_KEY)/sizeof(char)
+
+        if(this->wakeUpAT() != 0){
+          return "";
+        }
+        this->atPrint("AT+CGNSPWR=1\r", "OK");
+        int res = this->atPrint("AT+CGNSINF\r", "+CGNSINF: 1,1", 5000, "+CGNSINF: 1,0");
+
+#ifdef _GNSS_GSM_VERBOSE
+        if (res == -1) {
+          Serial.println("GNSS| PWR on, No fix.");
+        }
+        else if (res == -2 || res == -3) {
+          Serial.println("GNSS| No fix, unknown.");
+        }
+#endif
+        if(res != 0){
+          return "";
+        }
+        /// select only useful gnss info to store.
+        strncpy(nMEARespBUff,this->getInBuffer(), NMEA_BUFF_LEN);
+        char* keyStart = strstr(nMEAResponseString, RESP_KEY);
+        if(keyStart != NULL){
+          nMEAResponseString = keyStart + RESP_KEY_LEN;  
+          for(int i= (nMEAResponseString - nMEARespBUff); nMEARespBUff[i] != '\0'; i++){
+            if(nMEARespBUff[i] == '\r' || nMEARespBUff[i] == '\n'){
+              nMEARespBUff[i] = '\0';
+            }
+          }
+        }
+        else{
+          nMEAResponseString = "";
+        }
+        Serial.println("NEW GNSS STR: ");
+        Serial.println(nMEAResponseString);
+      }
+      Serial.println("PROC. GNSS STR: ");
+      Serial.println(nMEAResponseString);
+
+      uint8_t coma = 0;
+      uint8_t precComa = 0;
+      char returnStr[20] = "";
+
+     // for(int i=0; (i< NMEA_BUFF_LEN) && (nMEARespBUff[i] != '\0')){}
+    }
+
 
   public:
 
@@ -182,85 +262,59 @@ class SIM7000 {
       return atCmdRes;
     }
 
-    int32_t datetime_to_unix_timestamp(char* datetime_str) {
-    struct tm tm;
-    time_t t;
 
-    // Parse the datetime string
-    char* p = datetime_str;
-    int val;
-
-    // Year
-    if (sscanf(p, "%4d", &val) != 1) {
-        fprintf(stderr, "Failed to parse year in datetime string: %s\n", datetime_str);
-        return -1;
-    }
-    tm.tm_year = val - 1900;
-    p += 4;
-
-    // Month
-    if (sscanf(p, "%2d", &val) != 1) {
-        fprintf(stderr, "Failed to parse month in datetime string: %s\n", datetime_str);
-        return -1;
-    }
-    tm.tm_mon = val - 1;
-    p += 2;
-
-    // Day
-    if (sscanf(p, "%2d", &val) != 1) {
-        fprintf(stderr, "Failed to parse day in datetime string: %s\n", datetime_str);
-        return -1;
-    }
-    tm.tm_mday = val;
-    p += 2;
-
-    // Hour
-    if (sscanf(p, "%2d", &val) != 1) {
-        fprintf(stderr, "Failed to parse hour in datetime string: %s\n", datetime_str);
-        return -1;
-    }
-    tm.tm_hour = val;
-    p += 2;
-
-    // Minute
-    if (sscanf(p, "%2d", &val) != 1) {
-        fprintf(stderr, "Failed to parse minute in datetime string: %s\n", datetime_str);
-        return -1;
-    }
-    tm.tm_min = val;
-    p += 2;
-
-    // Second
-    if (sscanf(p, "%2d", &val) != 1) {
-        fprintf(stderr, "Failed to parse second in datetime string: %s\n", datetime_str);
-        return -1;
-    }
-    tm.tm_sec = val;
-
-    // Convert struct tm to time_t
-    t = mktime(&tm);
-    if (t == -1) {
-        fprintf(stderr, "Failed to convert struct tm to time_t\n");
-        return -1;
-    }
-
-    // Convert the timestamp to int32_t
-    if (t < INT32_MIN || t > INT32_MAX) {
-        fprintf(stderr, "Timestamp out of range for int32_t\n");
-        return -1;
-    }
-    return (int32_t)t;
-}
-   /* int32_t datetime_to_unix_timestamp() {  /// written by chatGPT
+    int32_t datetimeToUnixTime(char* datetime_str) {
       struct tm tm;
       time_t t;
 
-      char datetime_str[] = "20230325234021.000"; 
-      // Parse the datetime string
-      if (strptime("20230325234021", "%Y%m%d%H%M%S", &tm) == NULL) {
-        fprintf(stderr, "Failed to parse datetime string: %s\n", datetime_str);
+      int val;
+
+      // Year
+      if (sscanf(datetime_str, "%4d", &val) != 1) {
+        fprintf(stderr, "Failed to parse year in datetime string: %s\n", datetime_str);
         return -1;
       }
+      tm.tm_year = val - 1900;
+      datetime_str += 4;
+
+      // Month
+      if (sscanf(datetime_str, "%2d", &val) != 1) {
+        fprintf(stderr, "Failed to parse month in datetime string: %s\n", datetime_str);
+        return -1;
+      }
+      tm.tm_mon = val - 1;
+      datetime_str += 2;
+
+      // Day
+      if (sscanf(datetime_str, "%2d", &val) != 1) {
+        fprintf(stderr, "Failed to parse day in datetime string: %s\n", datetime_str);
+        return -1;
+      }
+      tm.tm_mday = val;
+      datetime_str += 2;
+
+      // Hour
+      if (sscanf(datetime_str, "%2d", &val) != 1) {
+        fprintf(stderr, "Failed to parse hour in datetime string: %s\n", datetime_str);
+        return -1;
+      }
+      tm.tm_hour = val;
+      datetime_str += 2;
+
+      // Minute
+      if (sscanf(datetime_str, "%2d", &val) != 1) {
+        fprintf(stderr, "Failed to parse minute in datetime string: %s\n", datetime_str);
+        return -1;
+      }
+      tm.tm_min = val;
+      datetime_str += 2;
+
+      // Second
+      if (sscanf(datetime_str, "%2d", &val) != 1) {
+        fprintf(stderr, "Failed to parse second in datetime string: %s\n", datetime_str);
+        return -1;
+      }
+      tm.tm_sec = val;
 
       // Convert struct tm to time_t
       t = mktime(&tm);
@@ -275,37 +329,74 @@ class SIM7000 {
         return -1;
       }
       return (int32_t)t;
-    }*/
+    }
+    /* int32_t datetime_to_unix_timestamp() {  /// written by chatGPT
+       struct tm tm;
+       time_t t;
+
+       char datetime_str[] = "20230325234021.000";
+       // Parse the datetime string
+       if (strptime("20230325234021", "%Y%m%d%H%M%S", &tm) == NULL) {
+         fprintf(stderr, "Failed to parse datetime string: %s\n", datetime_str);
+         return -1;
+       }
+
+       // Convert struct tm to time_t
+       t = mktime(&tm);
+       if (t == -1) {
+         fprintf(stderr, "Failed to convert struct tm to time_t\n");
+         return -1;
+       }
+
+       // Convert the timestamp to int32_t
+       if (t < INT32_MIN || t > INT32_MAX) {
+         fprintf(stderr, "Timestamp out of range for int32_t\n");
+         return -1;
+       }
+       return (int32_t)t;
+      }*/
+
+
 
     int32_t getUnixTmNTP(int32_t &timeBuff) {
+      /// @TODO: to be implemented!
     }
     int getUnixTm(int32_t &timeBuff) {
 
       Serial.println("MODEMTIME");
+      this->getDataStr(3, true);
 
-      char datetimestr[]= "20230325234021.000";
-      Serial.println(datetime_to_unix_timestamp("20230325234021"));
-      if (this->wakeUpAT() != 0) {
-        Serial.print("Can't wake up");
-        return -1;
+      char datetimestr[] = "20230325234021.000";
+      Serial.println(datetimeToUnixTime("20230325234021"));
+
+      int32_t newUnixTime = datetimeToUnixTime("20230325234021");
+      if (newUnixTime != -1) {
+        timeBuff = newUnixTime;
+        return 0;                     /// time is parsed correctly
       }
-      //this->atPrint("AT+CGNSINF=?\r", "xxx");
+      return -1;
+
+      /* if (this->wakeUpAT() != 0) {
+         Serial.print("Can't wake up");
+         return -1;
+        }
+        //this->atPrint("AT+CGNSINF=?\r", "xxx");
 
 
-      /// GET GNSS INFO
-      this->atPrint("AT+CGNSPWR=1\r", "OK");
-      int res = this->atPrint("AT+CGNSINF\r", "+CGNSINF: 1,1", 5000, "+CGNSINF: 1,0");
+        /// GET GNSS INFO
+        this->atPrint("AT+CGNSPWR=1\r", "OK");
+        int res = this->atPrint("AT+CGNSINF\r", "+CGNSINF: 1,1", 5000, "+CGNSINF: 1,0");
 
 
-      if (res == -1) {
-        Serial.println("GNSS| PWR on, No fix.");
-      }
-      else if (res == -2 || res == -3) {
-        Serial.println("GNSS| No fix, unknown.");
-      }
-      Serial.println(this->getInBuffer());
+        if (res == -1) {
+         Serial.println("GNSS| PWR on, No fix.");
+        }
+        else if (res == -2 || res == -3) {
+         Serial.println("GNSS| No fix, unknown.");
+        }
+        Serial.println(this->getInBuffer());
 
-
+      */
       return 0;
     }
 };
