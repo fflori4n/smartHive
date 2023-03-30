@@ -16,10 +16,13 @@ HardwareSerial GSMModemSerial(2); // use UART2
 #define GETELAPSEDMS() ((uint32_t)(int32_t)(esp_timer_get_time()/1000) - this->startedMs)
 
 #define IN_BUFF_LEN 300
+#define NMEA_BUFF_LEN 200
 
 class SIM7000 {
+
   private:
     char serInBuff[IN_BUFF_LEN];
+    char nMEARespBUff[NMEA_BUFF_LEN];
 
     uint32_t timeLimitms = 5000;
     uint32_t startedMs = 0;
@@ -40,7 +43,10 @@ class SIM7000 {
       return methodSig;
     }
 
-    char* getDataStr(byte tag, bool querry = false) {
+    int getDataStr(char* returnStr, byte tag, bool querry = false) {
+
+#define RESP_KEY "+CGNSINF:"
+#define RESP_KEY_LEN 10 ///sizeof(RESP_KEY)/sizeof(char)
 
       /*
          +CGNSINF: 1,1,20230327212102.000,46.103447,19.635575,132.200,0.00,356.7,1,,1.0,1.4,0.9,,22,7,1,,32,,
@@ -66,18 +72,11 @@ class SIM7000 {
           20 - HPA
           21 - VPA
       */
-
-      #define NMEA_BUFF_LEN 200
-      static char nMEARespBUff[NMEA_BUFF_LEN];
-      char* nMEAResponseString = nMEARespBUff;
+      char* nMEAResponseString = this->nMEARespBUff;
 
       if (querry) {
-
-        #define RESP_KEY "+CGNSINF:"
-        #define RESP_KEY_LEN 10 ///sizeof(RESP_KEY)/sizeof(char)
-
-        if(this->wakeUpAT() != 0){
-          return "";
+        if (this->wakeUpAT() != 0) {
+          return -1;
         }
         this->atPrint("AT+CGNSPWR=1\r", "OK");
         int res = this->atPrint("AT+CGNSINF\r", "+CGNSINF: 1,1", 5000, "+CGNSINF: 1,0");
@@ -90,34 +89,46 @@ class SIM7000 {
           Serial.println("GNSS| No fix, unknown.");
         }
 #endif
-        if(res != 0){
-          return "";
+        if (res != 0) {
+          return -1;
         }
-        /// select only useful gnss info to store.
-        strncpy(nMEARespBUff,this->getInBuffer(), NMEA_BUFF_LEN);
-        char* keyStart = strstr(nMEAResponseString, RESP_KEY);
-        if(keyStart != NULL){
-          nMEAResponseString = keyStart + RESP_KEY_LEN;  
-          for(int i= (nMEAResponseString - nMEARespBUff); nMEARespBUff[i] != '\0'; i++){
-            if(nMEARespBUff[i] == '\r' || nMEARespBUff[i] == '\n'){
-              nMEARespBUff[i] = '\0';
-            }
+        if (strstr(this->getInBuffer(), RESP_KEY) == NULL) { /// key not found in buff
+          return -1;
+        }
+
+        strncpy(nMEARespBUff, strstr(this->getInBuffer(), RESP_KEY) + RESP_KEY_LEN, NMEA_BUFF_LEN); //strncpy NOT NULL TERMINATING!!!
+        //nMEAResponseString = strstr(nMEAResponseString, RESP_KEY) ;
+        for (int i = (nMEAResponseString - nMEARespBUff); ((nMEARespBUff[i] != '\0') && (i < NMEA_BUFF_LEN)); i++) {
+          if (nMEARespBUff[i] == '\r' || nMEARespBUff[i] == '\n') {
+            nMEARespBUff[i] = '\0';
           }
         }
-        else{
-          nMEAResponseString = "";
-        }
-        Serial.println("NEW GNSS STR: ");
+        Serial.println("Updated GNSS STR.: ");
         Serial.println(nMEAResponseString);
+
       }
-      Serial.println("PROC. GNSS STR: ");
-      Serial.println(nMEAResponseString);
 
-      uint8_t coma = 0;
-      uint8_t precComa = 0;
-      char returnStr[20] = "";
+      uint8_t comma = 0;
+      char* startIndex = this->nMEARespBUff;//nMEARespBUff;
+      char* endIndex = NULL;
+      //char returnStr[20] = "";
 
-     // for(int i=0; (i< NMEA_BUFF_LEN) && (nMEARespBUff[i] != '\0')){}
+      for (int i = 0; (i < NMEA_BUFF_LEN) && (nMEARespBUff[i] != '\0'); i++) {
+        if (nMEARespBUff[i] == ',' || nMEARespBUff[i] == '\0') {
+          comma++;
+          if (comma == (tag - 1)) {
+            startIndex = &(nMEARespBUff[i]) + 1;
+          }
+          else if (comma == tag) {
+            endIndex = &(nMEARespBUff[i]);
+            strncpy(returnStr, startIndex, (endIndex - startIndex)); //strncpy NOT NULL TERMINATING!!!
+            returnStr[(endIndex - startIndex)] = '\0';
+            Serial.println("PROC. RETURN STR: ");
+            Serial.println(returnStr);
+            return 0;
+          }
+        }
+      }
     }
 
 
@@ -263,7 +274,7 @@ class SIM7000 {
     }
 
 
-    int32_t datetimeToUnixTime(char* datetime_str) {
+    int32_t datetimeToUnixTime(char* datetime_str) {  /// CHAT GPT did this method, if the code sux it's not my fault.
       struct tm tm;
       time_t t;
 
@@ -330,33 +341,6 @@ class SIM7000 {
       }
       return (int32_t)t;
     }
-    /* int32_t datetime_to_unix_timestamp() {  /// written by chatGPT
-       struct tm tm;
-       time_t t;
-
-       char datetime_str[] = "20230325234021.000";
-       // Parse the datetime string
-       if (strptime("20230325234021", "%Y%m%d%H%M%S", &tm) == NULL) {
-         fprintf(stderr, "Failed to parse datetime string: %s\n", datetime_str);
-         return -1;
-       }
-
-       // Convert struct tm to time_t
-       t = mktime(&tm);
-       if (t == -1) {
-         fprintf(stderr, "Failed to convert struct tm to time_t\n");
-         return -1;
-       }
-
-       // Convert the timestamp to int32_t
-       if (t < INT32_MIN || t > INT32_MAX) {
-         fprintf(stderr, "Timestamp out of range for int32_t\n");
-         return -1;
-       }
-       return (int32_t)t;
-      }*/
-
-
 
     int32_t getUnixTmNTP(int32_t &timeBuff) {
       /// @TODO: to be implemented!
@@ -364,39 +348,30 @@ class SIM7000 {
     int getUnixTm(int32_t &timeBuff) {
 
       Serial.println("MODEMTIME");
-      this->getDataStr(3, true);
 
-      char datetimestr[] = "20230325234021.000";
-      Serial.println(datetimeToUnixTime("20230325234021"));
+      char returnStr[20] = "";
+     /* this->getDataStr(returnStr, 0, true);
+      this->getDataStr(returnStr, 1);
+      this->getDataStr(returnStr, 2);
 
-      int32_t newUnixTime = datetimeToUnixTime("20230325234021");
-      if (newUnixTime != -1) {
-        timeBuff = newUnixTime;
-        return 0;                     /// time is parsed correctly
+      this->getDataStr(returnStr, 4);
+      this->getDataStr(returnStr, 5);
+      this->getDataStr(returnStr, 6);
+      this->getDataStr(returnStr, 7);
+      this->getDataStr(returnStr, 8);
+      this->getDataStr(returnStr, 9);
+      this->getDataStr(returnStr, 10);*/
+
+      this->getDataStr(returnStr, 3, true);
+      Serial.println(strlen(returnStr));
+      if (this->getDataStr(returnStr, 3) == 0 && strlen(returnStr) == 18) { /// UTC is probably valid, worth trying parsing
+        int32_t newUnixTime = datetimeToUnixTime(returnStr);
+        if (newUnixTime != -1) {
+          timeBuff = newUnixTime;
+          return 0;                     /// time is parsed correctly
+        }
       }
+      Serial.println(F("Error getting time from GNSS"));
       return -1;
-
-      /* if (this->wakeUpAT() != 0) {
-         Serial.print("Can't wake up");
-         return -1;
-        }
-        //this->atPrint("AT+CGNSINF=?\r", "xxx");
-
-
-        /// GET GNSS INFO
-        this->atPrint("AT+CGNSPWR=1\r", "OK");
-        int res = this->atPrint("AT+CGNSINF\r", "+CGNSINF: 1,1", 5000, "+CGNSINF: 1,0");
-
-
-        if (res == -1) {
-         Serial.println("GNSS| PWR on, No fix.");
-        }
-        else if (res == -2 || res == -3) {
-         Serial.println("GNSS| No fix, unknown.");
-        }
-        Serial.println(this->getInBuffer());
-
-      */
-      return 0;
     }
 };

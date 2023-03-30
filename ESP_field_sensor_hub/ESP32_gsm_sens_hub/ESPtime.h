@@ -4,8 +4,8 @@
 class ESPtime {
 #define TZ_INFO "MST7MDT6,M3.2.0/02:00:00,M11.1.0/02:00:00"
   private:
-    const long  gmtOffset_sec = 3600;
-    const int   daylightOffset_sec = 3600;
+    const int32_t gmtOffset_sec = 3600*2;       /// CET GMT+2
+    //const int   daylightOffset_sec = 3600;    /// I refuse to use it.
     const char* ntpServer = "pool.ntp.org";
     SIM7000 modem;
     bool GPStime = false;
@@ -31,34 +31,32 @@ class ESPtime {
     }
 
     void updateTimeIfNeeded() {
+      #define UPDATE_TIME_PERIOD_MINS 30
+      static int32_t lastUpdate = 0;
+      if(abs((int32_t)time(NULL) - lastUpdate) < (UPDATE_TIME_PERIOD_MINS*60)){
+        return;
+      }
+      Serial.print(F("TIME| system time update."));
       if(!GPStime){
         return;
       }
-      int32_t newTime;
+      int32_t newTime = 0;   /// check if time was updated, and get new time from SIM7000
       if(modem.getUnixTm(newTime) != 0 ){
         return;
       }
-      setUnixtime(newTime);
-      Serial.print("new time is: ");
-      Serial.println(newTime);
+      Serial.print(F("TIME| Old:"));
       printLocalTime();
-      
-      
-      /// TODO: check if time was updated, and get new time from SIM7000
+      setUnixtime((newTime + gmtOffset_sec));
+      lastUpdate = (int32_t)time(NULL);
+      Serial.print(F("TIME| New:"));
+      printLocalTime();
+      Serial.println(F("TIME| [ OK ]"));
     }
 
     void printLocalTime()
     {
-      /*struct tm timeinfo;
-        if (!getLocalTime(&timeinfo)) {
-        Serial.println("Failed to obtain time");
-        return;
-        }
-        Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");*/
       struct tm now;
       getLocalTime(&now, 0);
-      if (now.tm_year >= 117) Serial.println(&now, "%B %d %Y %H:%M:%S (%A)");
-
-      Serial.println(&now, "%B %d %Y %H:%M:%S (%A)");
+      Serial.print(&now, " %B %d %Y %H:%M:%S (%A)\n");
     }
 };
