@@ -49,6 +49,7 @@ void setup()
   
   //Serial.println("GSM COM DUMP:");
  // sendHubStatusMqtt(gsmModem);
+ setSensorPwr(true);
 } 
 
 void setSensorPwr(bool isON){
@@ -76,58 +77,17 @@ void loop()
   //com485.sendDataPullMsg('A', 'B');
   hubTime.printLocalTime();
   hubTime.updateTimeIfNeeded();
-  setSensorPwr(true);
-  delay(5000);
+  //setSensorPwr(true);
   sensorA.update();
-  delay(2000);
   sensorB.update();
-  delay(2000);
-  setSensorPwr(false);
+  //setSensorPwr(false);
   
   //delay(20000);
 
-#ifdef _SEND_MQTT
+//#ifdef _SEND_MQTT
   sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
-  delay(20000);
-#endif
-
-  /*for(int i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
-    if(gsmModem.atPrint("AT\r","OK",500) == 0){
-      break;
-    }
-  }
-    gsmModem.atPrint("AT&F\r","OK");
-    delay(30000);
-    for(int i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
-    if(gsmModem.atPrint("AT\r","OK",500) == 0){
-      break;
-    }
-  }*/
-   /* gsmModem.atPrint("AT+CPIN?\r","OK");
-    gsmModem.atPrint("AT+CMEE=1\r","OK", 10000);
-    gsmModem.atPrint("AT+CNMP=13\r","OK");
-    gsmModem.atPrint("AT+CFUN=1\r","OK");
-    gsmModem.atPrint("AT+CPSI?\r","OK");
-    gsmModem.atPrint("AT+CGNSPWR=0\r","OK");
-    
-    gsmModem.atPrint("AT+COPS?\r","OK", 10000);
-    gsmModem.atPrint("AT+CREG?\r","+CREG: 0,1", 30000);
-    gsmModem.atPrint("AT+CSQ\r","OK");
-    gsmModem.atPrint("AT+CMEE=2\r","OK");
-    gsmModem.atPrint("ATX 0\r","OK");
-    //gsmModem.atPrint("ATD *100#;\r","OK");
-   // gsmModem.atPrint("ATZ\r","OK");
-    
-    gsmModem.atPrint("AT+GMR\r","OK");*/
-   // gsmModem.atPrint("ATD0640504964\r","OK");
-   // gsmModem.atPrint("ATD0640504964;\r","OK");
-  //sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
-  delay(10000);
-  
-  //sensorA.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
-  //sensorB.addMqttTags(mqttPayloadBuffer, tempStrBuffer);
-  //Serial.println(mqttPayloadBuffer);
- // mqttPayloadBuffer = "";
-  //sendHubStatusMqtt(gsmModem);
-  //delay(20000);
+  delay(2000);
+ // sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
+  delay(5*60000);
+//#endif
 }

@@ -347,7 +347,7 @@ class SIM7000 {
     }
     int getUnixTm(int32_t &timeBuff) {
 
-      Serial.println("MODEMTIME");
+      //Serial.println("MODEMTIME");
 
       char returnStr[20] = "";
      /* this->getDataStr(returnStr, 0, true);
@@ -363,7 +363,7 @@ class SIM7000 {
       this->getDataStr(returnStr, 10);*/
 
       this->getDataStr(returnStr, 3, true);
-      Serial.println(strlen(returnStr));
+      //Serial.println(strlen(returnStr));
       if (this->getDataStr(returnStr, 3) == 0 && strlen(returnStr) == 18) { /// UTC is probably valid, worth trying parsing
         int32_t newUnixTime = datetimeToUnixTime(returnStr);
         if (newUnixTime != -1) {

@@ -7,9 +7,9 @@
 #define RO_PIN 5//10
 #define DI_PIN 3//11
 #define DE_PIN 4//12
-#define DHT0_PIN 10
+#define DHT0_PIN 12
 #define DHT1_PIN 11
-#define DHT2_PIN 12
+#define DHT2_PIN 10
 #define WAKE_PIN 2
 #define PIR_PIN 9
 #define GPIO0_PIN 6
@@ -24,7 +24,7 @@
 
 #define DHT0_TYPE DHT22
 #define DHT1_TYPE DHT22
-//#define DHT2_TYPE DHT11
+//#define DHT2_TYPE DHT22
 
 #ifdef DHT0_TYPE
   DHT dht0(DHT0_PIN, DHT0_TYPE);
@@ -205,11 +205,11 @@ void readDHT(DHT &dhtSensor, int &temp, int &humidity){  /// TODO: optimise this
 }
 
 void loop() {
- // Serial.println(F("Sleep"));
+  //Serial.println(F("Sleep"));
   goIdle();
- // Serial.println(F("Woke up."));
+  //Serial.println(F("Woke up."));
 
-  /*if(timerSeconds > DHTREAD_PERIOD_SECS){
+  if(timerSeconds > DHTREAD_PERIOD_SECS){
       Serial.println(F("reading DHT 60 sec"));
       #ifdef DHT0_TYPE
       readDHT(dht0, dht0Temp, dht0Humi);
@@ -230,7 +230,7 @@ void loop() {
       }
       motionCount = 0;
       timerSeconds = 0;
-  }*/
+  }
   //noInterrupts();
   while(serial.isAvailable() == 0){        
     if(serial.checkInbuf() == 0 && serial.chkIfPoll() == 0){
