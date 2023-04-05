@@ -33,7 +33,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
   char gnssHeightStr[9] = "";
   char gnssSateliteNumStr[5] = "";
   char gnssCN0Str[5] = "";
-  char rssiStr[5] = "";
+  char rssiStr[6] = "";
   
   uint8_t commaCount = 0;
   uint8_t prevCommaIndex = 0;
@@ -65,7 +65,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& t
     else{
       rssiSimNotation = 0;  /// 99 means unknown or no connection
     }
-    snprintf(rssiStr, 3,"%d",rssiSimNotation);  
+    snprintf(rssiStr, 4,"-%d",rssiSimNotation);  
 
   
  //gsmModem.atPrint("AT+CUSD=1\r","OK");

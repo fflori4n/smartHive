@@ -16,6 +16,8 @@ char mqttPayloadBuffer[500] = "{";
 char mqttPayloadBuff[500] = "";
 char tempStrBuffer[_TEMP_STRLEN];
 
+bool sensorsUpToDate = false;
+
 SIM7000 gsmModem = SIM7000();
 RS485Com com485 = RS485Com();
 
@@ -34,22 +36,19 @@ void setup()
   gsmModem.init();
   hubTime.useModem(gsmModem);
   delay(2000);
-  hubTime.setUnixtime(1679809221);
 
   /// pin for reading voltages
   pinMode(VPPIN, INPUT);
   analogSetWidth(11);
   analogReadResolution(11);
-  /// \pin for reading voltages
 
   pinMode(SENS_PWR_ON, OUTPUT);
   pinMode(SENS_PWR_OFF, OUTPUT);
   digitalWrite(SENS_PWR_ON, LOW);
   digitalWrite(SENS_PWR_OFF, LOW);
   
-  //Serial.println("GSM COM DUMP:");
- // sendHubStatusMqtt(gsmModem);
- setSensorPwr(true);
+  setSensorPwr(true);
+  hubTime.updateTimeIfNeeded(true);
 } 
 
 void setSensorPwr(bool isON){
@@ -66,28 +65,22 @@ void setSensorPwr(bool isON){
 }
 void loop()  
 { 
-  //readVoltages();
-  //delay(1000);
-  //delay(10000);
-  //Serial.println("loop");
-
-  //Serial.println("GSM COM DUMP:");
-  //sendHubStatusMqtt(gsmModem);
-  //delay(600000);
-  //com485.sendDataPullMsg('A', 'B');
+  if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
+    setSensorPwr(true);
+    delay(20000);
+    sensorA.update();
+    sensorB.update();
+    setSensorPwr(false);
+    sensorsUpToDate = true;
+  }
+  else if(hubTime.isTimeForSend()){
+    Serial.println("MQTT SEND:");
+    sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
+    delay(1000);
+    sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
+    sensorsUpToDate = false;
+  }
   hubTime.printLocalTime();
   hubTime.updateTimeIfNeeded();
-  //setSensorPwr(true);
-  sensorA.update();
-  sensorB.update();
-  //setSensorPwr(false);
-  
-  //delay(20000);
-
-//#ifdef _SEND_MQTT
-  sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
-  delay(2000);
- // sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
-  delay(5*60000);
-//#endif
+  delay(500);
 }

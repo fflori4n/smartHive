@@ -3,6 +3,9 @@
 
 class ESPtime {
 #define TZ_INFO "MST7MDT6,M3.2.0/02:00:00,M11.1.0/02:00:00"
+#define MQTT_SEND_PERIOD_MINS 5
+#define SENS_UPDATE_PERIOD_MINS 3
+#define UPDATE_TIME_PERIOD_MINS 13
   private:
     const int32_t gmtOffset_sec = 3600*2;       /// CET GMT+2
     //const int   daylightOffset_sec = 3600;    /// I refuse to use it.
@@ -11,6 +14,10 @@ class ESPtime {
     bool GPStime = false;
 
     bool timeUpdated = -1;
+
+    int32_t lastMqttSend = 0;
+
+    struct tm now;
 
   public:
 
@@ -30,10 +37,9 @@ class ESPtime {
       return settimeofday((const timeval*)&epoch, 0);
     }
 
-    void updateTimeIfNeeded() {
-      #define UPDATE_TIME_PERIOD_MINS 30
+    void updateTimeIfNeeded(bool force = false) {
       static int32_t lastUpdate = 0;
-      if(abs((int32_t)time(NULL) - lastUpdate) < (UPDATE_TIME_PERIOD_MINS*60)){
+      if(!force && abs((int32_t)time(NULL) - lastUpdate) < (UPDATE_TIME_PERIOD_MINS*60)){
         return;
       }
       Serial.print(F("TIME| system time update."));
@@ -55,8 +61,27 @@ class ESPtime {
 
     void printLocalTime()
     {
-      struct tm now;
       getLocalTime(&now, 0);
       Serial.print(&now, " %B %d %Y %H:%M:%S (%A)\n");
+    }
+
+    bool isTimeForSend(){
+      if(abs((int32_t)time(NULL) - lastMqttSend) < (MQTT_SEND_PERIOD_MINS*60)){
+        return false;
+      }
+      getLocalTime(&now, 0);
+      if((now.tm_min % 5) == 0){
+        Serial.println("Send it.");
+        lastMqttSend = (int32_t)time(NULL);
+        return true;
+      }
+      return false; 
+    }
+
+    bool isTimeForSensorUpdate(){
+      if(abs((int32_t)time(NULL) - lastMqttSend) < (SENS_UPDATE_PERIOD_MINS*60)){
+        return false;
+      }
+      return true;
     }
 };
