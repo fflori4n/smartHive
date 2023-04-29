@@ -3,7 +3,7 @@
 
 
 /// TODO: split this into settings.h
-#ifndef USE_SETTINGS_HEADER
+#ifndef USING_SETTINGS_H_RS485CONF
 #define BAUD 9600
 
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
@@ -249,7 +249,7 @@ class RS485Com {
           break;
       }
     }*/
-    void respond2Poll(){
+    void respond2Poll(int& dht0Temp, int& dht0Humi, int& dht1Temp, int& dht1Humi, int& dht2Temp, int& dht2Humi, uint8_t& tiltSensors, uint8_t& pIRsensors){
       snprintf(msgBuff, MSGBUFF_LEN, "%d,%d,%d,%d,%d,%d,%d,%d", dht0Temp, dht0Humi, dht1Temp, dht1Humi, dht2Temp, dht2Humi, tiltSensors, pIRsensors);
       this-> sendMsg(MASTER_DEV_ADDR, THIS_DEV_ADDR, DEV_TYPE_CHAR);
     }
