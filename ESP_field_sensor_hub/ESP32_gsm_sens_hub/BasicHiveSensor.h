@@ -27,7 +27,7 @@ class BasicHiveSensor {
           numb *= -1;
           continue;
         }
-        int digit = (int)(strBuff[StoD_BUFF_LEN - 1 - i] - '0');
+        double digit = (double)((strBuff[StoD_BUFF_LEN - 1 - i] - '0'));
         if (digit < 0 || digit > 9) {
           continue;
         }
@@ -52,22 +52,22 @@ class BasicHiveSensor {
           strIndex = 0;
           switch (cCount) {
             case 2:
-              dhtCsvData[0] = string2Double(strToDoubleBuff) / 10;
+              dhtCsvData[0] = string2Double(strToDoubleBuff) / 10.0;
               break;
             case 3:
-              dhtCsvData[1] = string2Double(strToDoubleBuff) / 10;
+              dhtCsvData[1] = string2Double(strToDoubleBuff) / 10.0;
               break;
             case 4:
-              dhtCsvData[2] = string2Double(strToDoubleBuff) / 10;
+              dhtCsvData[2] = string2Double(strToDoubleBuff) / 10.0;
               break;
             case 5:
-              dhtCsvData[3] = string2Double(strToDoubleBuff) / 10;
+              dhtCsvData[3] = string2Double(strToDoubleBuff) / 10.0;
               break;
             case 6:
-              dhtCsvData[4] = string2Double(strToDoubleBuff) / 10;
+              dhtCsvData[4] = string2Double(strToDoubleBuff) / 10.0;
               break;
             case 7:
-              dhtCsvData[5] = string2Double(strToDoubleBuff) / 10;
+              dhtCsvData[5] = string2Double(strToDoubleBuff) / 10.0;
               break;
             case 8:
               dhtCsvData[6] = string2Double(strToDoubleBuff);

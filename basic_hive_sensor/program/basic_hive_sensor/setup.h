@@ -27,7 +27,7 @@
 #define WAITS_ON_POWERON 3 /// wait secs when power is turned on for sensors and other peripheries to power on properly, before reading them.
 
 #define MOTION_ACTIVATE_PROP 0.1 /// if motion is detected for 10% of DHTREAD PERIOD, motion is detected
-#define MOTION_TRIGGER_MODE 0 /// 0 - Zero tolerance for motion, use this when sensor is using power saving mode, motion detection could still return false results, 1 - normal mode
+#define MOTION_TRIGGER_MODE 1 /// 0 - Zero tolerance for motion, use this when sensor is using power saving mode, motion detection could still return false results, 1 - normal mode
 #define READGPIO9 (PINB  & B00000010)
 
 

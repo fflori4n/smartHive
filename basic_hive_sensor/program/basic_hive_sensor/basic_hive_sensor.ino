@@ -1,5 +1,7 @@
 #include <SoftwareSerial.h> /// probably will be removed
 
+#define DHT_DEBUG
+
 #include "DHT.h"
 #include "setup.h"
 #include "RS485Com.h"
@@ -105,95 +107,100 @@ void readDHT(DHT &dhtSensor, int &temp, int &humidity) { /// TODO: optimise this
 #define MIN_DHT_HUMI 0
 #define RETRY_DHT_READ 10
 #define AVERAGE_FILTER_NEW_WEIGHT 1 /// 1 to disable filtering. if sensor works in power saving mode.
-//#define KEEP_VALUES_IF_UPDATE_FAILS
+  //#define KEEP_VALUES_IF_UPDATE_FAILS
+#define PAUSE_BETWEEN_SENS_READS 2500
 
   double newTemp = -999;
   double newHumi = -999;
   byte updatedFlag = 0;
 
   for (int i = 0; i < RETRY_DHT_READ; i++) {
+
+    updatedFlag = 0;
+    noInterrupts();
     newTemp = dhtSensor.readTemperature();
-
-    if (!isnan(newTemp) && (newTemp <= MAX_DHT_TEMP) && (newTemp >= MIN_DHT_TEMP)) {
-      if (temp != -999 && AVERAGE_FILTER_NEW_WEIGHT != 1) {
-        temp = (int)((temp * (1 - AVERAGE_FILTER_NEW_WEIGHT)) + (newTemp * 10) * AVERAGE_FILTER_NEW_WEIGHT);
-      }
-      else {
-        temp = (int)(newTemp * 10);
-      }
-
-      updatedFlag += 1;
-      break;
-    }
-    delay(1000);
-  }
-
-  for (int i = 0; i < RETRY_DHT_READ; i++) {
     newHumi = dhtSensor.readHumidity();
-    if (!isnan(newHumi) && (newTemp <= MAX_DHT_HUMI) && (newTemp >= MIN_DHT_HUMI)) {
-      if (humidity != -999 && AVERAGE_FILTER_NEW_WEIGHT != 1) {
-        humidity = (int)((humidity * (1 - AVERAGE_FILTER_NEW_WEIGHT)) + (newHumi * 10) * AVERAGE_FILTER_NEW_WEIGHT);
-      }
-      else {
-        humidity = (int)(newHumi * 10);
-      }
-      updatedFlag += 2;
-      break;
+    interrupts();
+
+    if (isnan(newTemp) || isnan(newHumi)) {
+      Serial.println(F("Failed to read sensor!"));
+      delay(PAUSE_BETWEEN_SENS_READS);
+      continue;
     }
-    delay(1000);
+    if ((newTemp <= MAX_DHT_TEMP) && (newTemp >= MIN_DHT_TEMP)) {
+      updatedFlag += 1;
+    }
+    if ((newHumi <= MAX_DHT_HUMI) && (newHumi >= MIN_DHT_HUMI)) {
+      updatedFlag += 2;
+    }
   }
+
+  if (temp != -999 && AVERAGE_FILTER_NEW_WEIGHT != 1) {
+    temp = (int)((temp * (1 - AVERAGE_FILTER_NEW_WEIGHT)) + (newTemp * 10) * AVERAGE_FILTER_NEW_WEIGHT);
+  }
+  else {
+    temp = (int)(newTemp * 10);
+  }
+
+  if (humidity != -999 && AVERAGE_FILTER_NEW_WEIGHT != 1) {
+    humidity = (int)((humidity * (1 - AVERAGE_FILTER_NEW_WEIGHT)) + (newHumi * 10) * AVERAGE_FILTER_NEW_WEIGHT);
+  }
+  else {
+    humidity = (int)(newHumi * 10);
+  }
+
+  delay(PAUSE_BETWEEN_SENS_READS);
 
   switch (updatedFlag) {
     case 3:
-      #ifdef PRINT_READINGS
+#ifdef PRINT_READINGS
       Serial.print(F("DHT|Temp: "));
       Serial.print(newTemp);
       Serial.print(F(" Humidity: "));
       Serial.println(newHumi);
-      #endif
+#endif
       break;
     case 2:
-      #ifdef PRINT_READINGS
+#ifdef PRINT_READINGS
       Serial.print(F("DHT|Temp: "));
       Serial.print(newTemp);
       Serial.print(F(" Humidity: x"));
-      #endif
-      #ifndef KEEP_VALUES_IF_UPDATE_FAILS
-      humidity= -999;
-      #endif
+#endif
+#ifndef KEEP_VALUES_IF_UPDATE_FAILS
+      humidity = -999;
+#endif
       break;
     case 1:
-      #ifdef PRINT_READINGS
+#ifdef PRINT_READINGS
       Serial.print(F("DHT|Temp: x"));
       Serial.print(F(" Humidity: "));
       Serial.println(newHumi);
-      #endif
-      #ifndef KEEP_VALUES_IF_UPDATE_FAILS
+#endif
+#ifndef KEEP_VALUES_IF_UPDATE_FAILS
       temp = -999;
-      #endif
+#endif
       break;
     case 0:
-      #ifdef PRINT_READINGS
+#ifdef PRINT_READINGS
       Serial.print(F("DHT|Temp: x"));
       Serial.print(F(" Humidity: x"));
-      #endif
-      #ifndef KEEP_VALUES_IF_UPDATE_FAILS
+#endif
+#ifndef KEEP_VALUES_IF_UPDATE_FAILS
       temp = -999;
-      humidity= -999;
-      #endif
+      humidity = -999;
+#endif
       break;
   }
-
 }
 
 void loop() {
   //Serial.println(F("Sleep"));
-  if (powerOnCompleted){
+  if (powerOnCompleted) {
     goIdle();
   }
   //Serial.println(F("Woke up."));
 
-  //noInterrupts();
+
   while (serial.isAvailable() == 0) {
     if (serial.checkInbuf() == 0 && serial.chkIfPoll() == 0) {
       serial.respond2Poll(dht0Temp, dht0Humi, dht1Temp, dht1Humi, dht2Temp, dht2Humi, tiltSensors, pIRsensors);
@@ -204,18 +211,18 @@ void loop() {
     delay(20);
   }
   //interrupts();
-  
-  if (!powerOnCompleted){
-    if(timerSeconds > WAITS_ON_POWERON){
+
+  if (!powerOnCompleted) {
+    if (timerSeconds > WAITS_ON_POWERON) {
       Serial.println(F("TMR|sens. power rdy."));
       powerOnCompleted = true;
       timerSeconds = DHTREAD_PERIOD_SECS + 1;
     }
-    else{
+    else {
       return;
     }
   }
-  
+
   if (timerSeconds > DHTREAD_PERIOD_SECS) {
     Serial.println(F("TMR|reading sensors."));
 #ifdef DHT0_TYPE

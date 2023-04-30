@@ -67,7 +67,7 @@ void loop()
 { 
   if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
     setSensorPwr(true);
-    delay(20000);
+    delay(45000);
     sensorA.update();
     sensorB.update();
     setSensorPwr(false);
