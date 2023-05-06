@@ -1,4 +1,14 @@
-void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTopic){
+/**
+ * Takes:
+ *  - ref. to SIM7000 object
+ *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
+ *  - char* to mqttTopic string
+ * Returns:
+ *  - 0 or -1 as indicator of success or fail
+ * function sends msg contained in mqttPayloadBuff to mqtt server using SIM7000G module using sim7000.h functions
+ * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
+ */
+int sendMqttSIM(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTopic){
   //char mqttPayloadBuffer[500] = "{";
   char tempStrBuffer[_TEMP_STRLEN];
   //char mqttTopic[] = "RTU0/RTU_INFO";
@@ -6,26 +16,14 @@ void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTo
   unsigned int len = 5;
   int i = 0;
 
-  /// Collect data and create mqtt frame
- // readVoltages();
- // addVoltageMqttTags(mqttPayloadBuffer, tempStrBuffer);
- // getGNSSaGSMinfo(gsmModem, mqttPayloadBuffer, tempStrBuffer);
-  
-//  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)random(0,255));
- // strcat(mqttPayloadBuffer, tempStrBuffer);
-//  strcat(mqttPayloadBuffer, " }\r");                                                                    /// !! the \r is very important, plese do not delete
- // Serial.println(mqttPayloadBuffer);
-
- // return;
-  
-  for(i=0; i<10; i++){                                  /// has to be sent a few times to set com speed
+  for(i=0; i<10; i++){                                  /// has to be sent a few times to set com speed /// @TODO: this has it's own function in sim7000.h if I remember correctly.
     if(gsmModem.atPrint("AT\r","OK",500) == 0){
       break;
     }
   }
   if(i>9 && gsmModem.atPrint("AT\r","OK",500) == -3){
     Serial.println("[ ER ] modem is not responding to AT");
-    return;
+    return -1;
   } 
   
   if(gsmModem.atPrint("AT+CNACT?\r","OK", 5000, "0.0.0.0") == -1){  /// check if connected already
@@ -73,7 +71,77 @@ void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTo
   }
   gsmModem.atPrint("AT+SMDISC\r","OK"); 
  // gsmModem.atPrint("AT+SMDISC\r","OK");
+  return 0;
  
+}
+
+/**
+ * Takes:
+ *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
+ *  - char* to mqttTopic string
+ * Returns:
+ *  - 0 or -1 as indicator of success or fail
+ * function sends msg contained in mqttPayloadBuff to mqtt server using the ESP32 Wifi device and PubSubClient library
+ * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
+ */
+int sendMqttWLAN(char(& mqttPayloadBuff)[500], const char* mqttTopic){
+
+  #define MQTT_CHECKIF_CONNECTED 200
+  #define MQTT_CONNECT_TIMEOUT 30000
+
+  if(isWifiAvailable(30000) != 0){
+    return -1;
+  }
+  const char* mqttServer = "sandorr.eunetddns.net";
+  const char* mqttClientName = "ESP32Client";
+  const int mqttPort = 1883;
+  
+  WiFiClient espClient;
+  PubSubClient client(espClient);
+
+  client.setServer(mqttServer, mqttPort);
+
+  Serial.println(F("WLAN-MQTT| Connecting to broker."));
+  for(int i=0; !client.connected(); i++){
+    client.connect(mqttClientName);             /// mqttUser, mqttPassword 
+    delay(MQTT_CHECKIF_CONNECTED);
+    if(i > (MQTT_CONNECT_TIMEOUT/MQTT_CHECKIF_CONNECTED)){
+      Serial.println(F("WLAN-MQTT|[ER] Can't connect to server- timeout."));
+      Serial.print(F("WLAN-MQTT| failed with status: "));
+      Serial.println(client.state());
+      return -1;
+    }
+  }
+  Serial.println(F("WLAN-MQTT| Connected."));
+  Serial.print(F("WLAN-MQTT| Sending: "));
+  Serial.println(mqttPayloadBuff);
+  int res = client.publish(mqttTopic, mqttPayloadBuff,strlen(mqttPayloadBuff)); //
+  if (res == 0) {                                       /// pubsub returns false if write is not successfull.
+    Serial.println(F("WLAN-MQTT|[ER] falied to send mqtt msg!"));
+    return -1;
+  }
+  Serial.println(F("WLAN-MQTT|[OK] msg sent!"));
+  return 0;
+}
+
+/**
+ * Takes:
+ *  - ref. to SIM7000 object
+ *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
+ *  - char* to mqttTopic string
+ * Returns:
+ *  - 0 or -1 as indicator of success or fail
+ * function is a wrapper, that tryes to send mqtt via primary mode of transmission, if that fails tryes backup mode to send mqtt.
+ * @TODO: This is not a great way of defining primary and secondary com devices...
+ * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
+ */
+void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTopic){
+  #define MAIN_COM sendMqttWLAN(mqttPayloadBuff,mqttTopic)  /// Main mode of communication - wifi is prefered.
+  #define BACKUP_COM sendMqttSIM(gsmModem,mqttPayloadBuff,mqttTopic)
+  if(MAIN_COM == 0){
+    return;
+  }
+  BACKUP_COM;
 }
 /**
  * Takes:

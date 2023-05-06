@@ -1,10 +1,13 @@
 #define _TEMP_STRLEN 100
 
+#include <WiFi.h>
+#include <PubSubClient.h>
 #include "RS485Com.h"
 #include "BasicHiveSensor.h"
 #include "sim7000.h"
 #include "sensHubInfo.h"
 #include "ReadVoltage.h"
+#include "wifiFunctions.h"
 #include "Mqtt.h"
 #include "ESPtime.h"
 
@@ -65,6 +68,9 @@ void setSensorPwr(bool isON){
 }
 void loop()  
 { 
+  /*strcat(mqttPayloadBuff, "Hello wifi world! gdsfgadfhfsdgafhgkjdfahgahdjkajdfhkjashfk"); 
+  sendMqtt(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
+  while(1){}*/
   if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
     setSensorPwr(true);
     delay(45000);
@@ -80,7 +86,7 @@ void loop()
     sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
     sensorsUpToDate = false;
   }
-  hubTime.printLocalTime();
+  //hubTime.printLocalTime();
   hubTime.updateTimeIfNeeded();
   delay(500);
 }
