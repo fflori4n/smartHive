@@ -1,29 +1,16 @@
 #define VPPIN 36
 #define VNPIN 39
 
-double vSol = -1;          // Solar - vp
+double vSol = -1;  // Solar - vp
 double vBat = -1;  // Battery - vn
 
 void readVoltages(){
   #define VN_SCALE 12.3/623 /// real voltage / ADC value
   #define VN_WEIGHT 5.0/100
 
-  #define VP_SCALE 12.3/623 /// real voltage / ADC value
+  #define VP_SCALE 5/4096 /// real voltage / ADC value
   #define VP_WEIGHT 5.0/100
   
-  //static double vp = 13.5;
-  //static double vn = 13.5;
-
- /* if(vBat == -1){
-    vBat = VN_SCALE*analogRead(VNPIN);
-  }
-  else{
-    vBat = vBat*(1 -VN_WEIGHT) + (VN_WEIGHT*VN_SCALE*analogRead(VNPIN));
-  }*/
-  
-  //vp = VP_SCALE*analogRead(VPPIN);        /// TODO: fix this, somehow not measuring right voltage...
-
-
   vBat = VN_SCALE*analogRead(VNPIN);  /// no filtering. let's see how it does
   vSol = VP_SCALE*analogRead(VPPIN);
   

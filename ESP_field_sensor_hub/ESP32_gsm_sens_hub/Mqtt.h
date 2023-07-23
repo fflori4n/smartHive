@@ -136,8 +136,8 @@ int sendMqttWLAN(char(& mqttPayloadBuff)[500], const char* mqttTopic){
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
 void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTopic){
-  #define MAIN_COM sendMqttWLAN(mqttPayloadBuff,mqttTopic)  /// Main mode of communication - wifi is prefered.
-  #define BACKUP_COM sendMqttSIM(gsmModem,mqttPayloadBuff,mqttTopic)
+  #define MAIN_COM sendMqttSIM(gsmModem,mqttPayloadBuff,mqttTopic)
+  #define BACKUP_COM sendMqttWLAN(mqttPayloadBuff,mqttTopic)  /// Main mode of communication - wifi is prefered.
   if(MAIN_COM == 0){
     return;
   }

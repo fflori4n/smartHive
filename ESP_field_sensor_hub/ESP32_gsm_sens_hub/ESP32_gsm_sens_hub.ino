@@ -20,6 +20,7 @@ char mqttPayloadBuff[500] = "";
 char tempStrBuffer[_TEMP_STRLEN];
 
 bool sensorsUpToDate = false;
+bool initialOnlineReport = false;
 
 SIM7000 gsmModem = SIM7000();
 RS485Com com485 = RS485Com();
@@ -68,23 +69,21 @@ void setSensorPwr(bool isON){
 }
 void loop()  
 { 
-  /*strcat(mqttPayloadBuff, "Hello wifi world! gdsfgadfhfsdgafhgkjdfahgahdjkajdfhkjashfk"); 
-  sendMqtt(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
-  while(1){}*/
   if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
     setSensorPwr(true);
-    delay(45000);
+    delay(20000);
     sensorA.update();
     sensorB.update();
     setSensorPwr(false);
     sensorsUpToDate = true;
   }
-  else if(hubTime.isTimeForSend()){
+  else if(hubTime.isTimeForSend() || !initialOnlineReport){
     Serial.println("MQTT SEND:");
     sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
     delay(1000);
     sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
     sensorsUpToDate = false;
+    initialOnlineReport = true;
   }
   //hubTime.printLocalTime();
   hubTime.updateTimeIfNeeded();
