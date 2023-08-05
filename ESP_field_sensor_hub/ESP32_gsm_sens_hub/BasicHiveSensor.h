@@ -138,7 +138,7 @@ class BasicHiveSensor {
       dtostrf(dNumber, 4, 2, outBuff);
     }
 
-    void addMqttTags(char(& mqttPayloadBuff)[500], char(& tempStrBuffer)[_TEMP_STRLEN]) {
+    void addMqttTags(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char(& tempStrBuffer)[_TEMP_STRLEN]) {
       char doubleConvBuff[15];
 
       if(!isUpdated){   /// do not add values if sensor was unreachable at last poll.

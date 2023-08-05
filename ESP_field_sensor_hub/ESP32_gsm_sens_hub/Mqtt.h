@@ -8,7 +8,7 @@
  * function sends msg contained in mqttPayloadBuff to mqtt server using SIM7000G module using sim7000.h functions
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
-int sendMqttSIM(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTopic){
+int sendMqttSIM(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const char* mqttTopic){
   //char mqttPayloadBuffer[500] = "{";
   char tempStrBuffer[_TEMP_STRLEN];
   //char mqttTopic[] = "RTU0/RTU_INFO";
@@ -84,7 +84,7 @@ int sendMqttSIM(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqtt
  * function sends msg contained in mqttPayloadBuff to mqtt server using the ESP32 Wifi device and PubSubClient library
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
-int sendMqttWLAN(char(& mqttPayloadBuff)[500], const char* mqttTopic){
+int sendMqttWLAN(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const char* mqttTopic){
 
   #define MQTT_CHECKIF_CONNECTED 200
   #define MQTT_CONNECT_TIMEOUT 30000
@@ -135,7 +135,7 @@ int sendMqttWLAN(char(& mqttPayloadBuff)[500], const char* mqttTopic){
  * @TODO: This is not a great way of defining primary and secondary com devices...
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
-void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTopic){
+void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const char* mqttTopic){
   #define MAIN_COM sendMqttSIM(gsmModem,mqttPayloadBuff,mqttTopic)
   #define BACKUP_COM sendMqttWLAN(mqttPayloadBuff,mqttTopic)  /// Main mode of communication - wifi is prefered.
   if(MAIN_COM == 0){
@@ -156,7 +156,7 @@ void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* mqttTo
  * 
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
-void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const char* topicName){
+void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const char* topicName){
   #define _TEMP_STRLEN 100
   char tempStrBuffer[_TEMP_STRLEN];
   static uint8_t msgId = 0;
@@ -167,6 +167,7 @@ void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const cha
   /// Collect data and create mqtt frame
   readVoltages();
   addVoltageMqttTags(mqttPayloadBuff, tempStrBuffer);
+  addSolLoggerMqttTags(mqttPayloadBuff, tempStrBuffer);
   getGNSSaGSMinfo(gsmModem, mqttPayloadBuff, tempStrBuffer);
   
   snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)msgId);
@@ -191,7 +192,7 @@ void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500], const cha
  * 
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
-void sendMqttBHSensorMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[500],const char* topicName, BasicHiveSensor* pBHSensors[], uint8_t numOfBHSensors){
+void sendMqttBHSensorMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN],const char* topicName, BasicHiveSensor* pBHSensors[], uint8_t numOfBHSensors){
   #define _TEMP_STRLEN 100
   char tempStrBuffer[_TEMP_STRLEN];
   static uint8_t msgId = 0;

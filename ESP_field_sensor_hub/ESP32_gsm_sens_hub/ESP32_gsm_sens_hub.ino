@@ -1,4 +1,5 @@
 #define _TEMP_STRLEN 100
+#define MQTT_PAYLOAD_BUFF_LEN 800
 
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -7,6 +8,7 @@
 #include "sim7000.h"
 #include "sensHubInfo.h"
 #include "ReadVoltage.h"
+#include "SolarLogger.h"
 #include "wifiFunctions.h"
 #include "Mqtt.h"
 #include "ESPtime.h"
@@ -14,9 +16,8 @@
 #define SENS_PWR_ON 23
 #define SENS_PWR_OFF 22
 
-
-char mqttPayloadBuffer[500] = "{";
-char mqttPayloadBuff[500] = "";
+char mqttPayloadBuffer[MQTT_PAYLOAD_BUFF_LEN] = "{";
+char mqttPayloadBuff[MQTT_PAYLOAD_BUFF_LEN] = "";
 char tempStrBuffer[_TEMP_STRLEN];
 
 bool sensorsUpToDate = false;
@@ -39,10 +40,11 @@ void setup()
   Serial.println("hello serial");
   gsmModem.init();
   hubTime.useModem(gsmModem);
-  delay(2000);
+  solarLogSerial.begin(4800);
+  delay(8000);
 
-  /// pin for reading voltages
-  pinMode(VPPIN, INPUT);
+  /*/// pin for reading voltages
+  pinMode(VPPIN, INPUT);*/
   analogSetWidth(11);
   analogReadResolution(11);
 
@@ -67,8 +69,11 @@ void setSensorPwr(bool isON){
     digitalWrite(SENS_PWR_OFF, LOW);
   }
 }
+
 void loop()  
 { 
+  updateSolLoggerData();
+  //Serial.println();
   if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
     setSensorPwr(true);
     delay(20000);
@@ -87,5 +92,5 @@ void loop()
   }
   //hubTime.printLocalTime();
   hubTime.updateTimeIfNeeded();
-  delay(500);
+  delay(5000);
 }

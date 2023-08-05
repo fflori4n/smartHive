@@ -26,7 +26,7 @@ void clearDecimals(char* string){
   }
   *s='\0';                            /// !! this will segfault if cstr was created using char* instead of char[]
 }
-void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[500], char (& tempStrBuffer)[_TEMP_STRLEN]){
+void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char (& tempStrBuffer)[_TEMP_STRLEN]){
   
   char latitudeStr[11] = "";
   char longitudeStr[12] = "";
