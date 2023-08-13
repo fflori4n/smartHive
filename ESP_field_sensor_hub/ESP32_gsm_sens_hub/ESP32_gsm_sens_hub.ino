@@ -43,8 +43,8 @@ void setup()
   solarLogSerial.begin(4800);
   delay(8000);
 
-  /*/// pin for reading voltages
-  pinMode(VPPIN, INPUT);*/
+  /// pin for reading voltages
+  pinMode(VNPIN, INPUT);
   analogSetWidth(11);
   analogReadResolution(11);
 
@@ -73,6 +73,7 @@ void setSensorPwr(bool isON){
 void loop()  
 { 
   updateSolLoggerData();
+  readVoltages();
   //Serial.println();
   if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
     setSensorPwr(true);

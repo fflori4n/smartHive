@@ -4,16 +4,16 @@
 
 SoftwareSerial solarLogSerial(36, 33); /* Serial has to be inverted, because it is connected via inverting opto coupler, only RX is used*/
 
-int16_t sol_voltage;
+int16_t sol_voltage = -100;
 int16_t sol_voltage_max;
 int16_t sol_voltage_min;
 
-int16_t sol_chargeCurrent;
+int16_t sol_chargeCurrent = 21000;
 int16_t sol_chargeCurrent_max;
 int16_t sol_chargeCurrent_min;
 
-int16_t sol_light;
-float sol_batTemperature;
+int16_t sol_light = 10000;
+float sol_batTemperature = -100.0;
 
 char solLogData[SOL_LOG_DATA_BUFF_LEN];
 
@@ -49,6 +49,10 @@ int8_t updateSolLoggerData(){
  /* Serial.println(solLogData);*/
   if(numOfCharsRead >= MAX_SOL_LOG_MESSAGE){
     Serial.println("SOLLOG | [ WR ] msg too long");
+    for(int readChars=0; solarLogSerial.available() && (readChars <= 1000); readChars++){
+      solarLogSerial.read();
+    }
+    return -1;
   }
 
   uint16_t reading = 0;
@@ -63,7 +67,17 @@ int8_t updateSolLoggerData(){
             }
           }
           if(alphanumeric){
-            sol_chargeCurrent = ((solLogData[i+1] - '0') * 10000) + ((solLogData[i+2] - '0') * 1000) + ((solLogData[i+3] - '0') * 100) + ((solLogData[i+4] - '0') * 10) + ((solLogData[i+5] - '0') * 1);
+            int16_t new_sol_chargeCurrent = ((solLogData[i+1] - '0') * 10000) + ((solLogData[i+2] - '0') * 1000) + ((solLogData[i+3] - '0') * 100) + ((solLogData[i+4] - '0') * 10) + ((solLogData[i+5] - '0') * 1);
+
+            if(new_sol_chargeCurrent >= 0 && new_sol_chargeCurrent < 25000){
+              if(sol_chargeCurrent == 21000){
+                sol_chargeCurrent = new_sol_chargeCurrent;
+              }
+              else{
+                /*sol_voltage_dev = (sol_voltage_dev * 0.99) + (0.1 * )*/
+                sol_chargeCurrent = (int16_t)( (((float)sol_chargeCurrent) * 0.95) + (((float)new_sol_chargeCurrent) * 0.05) );
+              }
+            }
             Serial.print("charge_current: ");
             Serial.println(sol_chargeCurrent);
           }
@@ -78,7 +92,17 @@ int8_t updateSolLoggerData(){
             }
           }
           if(alphanumeric){
-            sol_voltage =((solLogData[i+1] - '0') * 10000) + ((solLogData[i+2] - '0') * 1000) + ((solLogData[i+3] - '0') * 100) + ((solLogData[i+4] - '0') * 10) + ((solLogData[i+5] - '0') * 1);
+            int16_t new_sol_voltage =((solLogData[i+1] - '0') * 10000) + ((solLogData[i+2] - '0') * 1000) + ((solLogData[i+3] - '0') * 100) + ((solLogData[i+4] - '0') * 10) + ((solLogData[i+5] - '0') * 1);
+
+            if(new_sol_voltage >= 5200 && new_sol_voltage < 40000){
+              if(sol_voltage == -100){
+                sol_voltage = new_sol_voltage;
+              }
+              else{
+                /*sol_voltage_dev = (sol_voltage_dev * 0.99) + (0.1 * )*/
+                sol_voltage = (int16_t)((((float)sol_voltage) * 0.98) + (((float)new_sol_voltage) * 0.02));
+              }
+            }
             Serial.print("Voltage: ");
             Serial.println(sol_voltage);
           }
@@ -138,38 +162,55 @@ void addSolLoggerMqttTags(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char(&
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"v_sol\":%d.%d,",(int)(sol_voltage/1000), (((int)sol_voltage)%1000)/10);
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
-  if(sol_voltage_max > 0 && sol_voltage_max < 99000){
+  /**else{
+    snprintf(tempStrBuffer, _TEMP_STRLEN, " \"v_sol\":None,");
+    strcat(mqttPayloadBuff, tempStrBuffer);
+  }*/
+  /*if(sol_voltage_max > 0 && sol_voltage_max < 99000){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"v_solM\":%d.%d,",(int)(sol_voltage_max/1000), (((int)sol_voltage_max)%1000)/10);
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
   if(sol_voltage_min > 0 && sol_voltage_min < 99000){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"v_solm\":%d.%d,",(int)(sol_voltage_min/1000), (((int)sol_voltage_min)%1000)/10);
     strcat(mqttPayloadBuff, tempStrBuffer);
-  }
+  }*/
   
   if(sol_chargeCurrent >-1 && sol_chargeCurrent < 20000){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_charge_i\":%d,",(int)(sol_chargeCurrent));
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
-  if(sol_chargeCurrent_min >-1 && sol_chargeCurrent_min < 20000){
+  /*else{
+    snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_charge_i\":None,");
+    strcat(mqttPayloadBuff, tempStrBuffer);
+  }*/
+ /* if(sol_chargeCurrent_min >-1 && sol_chargeCurrent_min < 20000){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_charge_im\":%d,",(int)(sol_chargeCurrent_min));
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
   if(sol_chargeCurrent_max >-1 && sol_chargeCurrent_max < 20000){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_charge_iM\":%d,",(int)(sol_chargeCurrent_max));
     strcat(mqttPayloadBuff, tempStrBuffer);
-  }
+  }*/
   
-  if(sol_light >-1 && sol_chargeCurrent < 9999){
+  if(sol_light >-1 && sol_light < 9999){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_light\":%d,",(int)(sol_light));
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
+  /*else{
+    snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_light\":None,");
+    strcat(mqttPayloadBuff, tempStrBuffer);
+  }
+  */
   if(sol_batTemperature >-99 && sol_chargeCurrent < 99){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_bat_temp\":%d.%d,",(int)(sol_batTemperature),(int)(abs(sol_batTemperature)*10)%100);
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
-  sol_voltage_max = 0;
-  sol_voltage_min = 999999;
-  sol_chargeCurrent_max = 0;
-  sol_chargeCurrent_min = 999999;
+  /*else{
+    snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_bat_temp\":None,");
+    strcat(mqttPayloadBuff, tempStrBuffer);
+  }*/
+  sol_voltage = -100;
+  sol_chargeCurrent = 21000;
+  sol_batTemperature = -100;
+  sol_light = 10000;
 }

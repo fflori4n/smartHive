@@ -165,7 +165,6 @@ void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BU
   mqttPayloadBuff[0] = '\0';
   strcat(mqttPayloadBuff, "{"); 
   /// Collect data and create mqtt frame
-  readVoltages();
   addVoltageMqttTags(mqttPayloadBuff, tempStrBuffer);
   addSolLoggerMqttTags(mqttPayloadBuff, tempStrBuffer);
   getGNSSaGSMinfo(gsmModem, mqttPayloadBuff, tempStrBuffer);

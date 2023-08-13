@@ -5,7 +5,7 @@ double vSol = -1;  // Solar - vp
 double vBat = -1;  // Battery - vn
 
 void readVoltages(){
-  #define VN_SCALE 12.28/1112 /// real voltage / ADC value
+  #define VN_SCALE 12.24/1395 /// real voltage / ADC value
   #define VN_WEIGHT 5.0/100
 
   #define VP_SCALE 5/4096 /// real voltage / ADC value
