@@ -33,6 +33,8 @@ BasicHiveSensor sensorB((char)66,"BHS_B", com485);
 BasicHiveSensor* bHSensList[2] = {&sensorA, &sensorB};
 ESPtime hubTime;
 
+bool lowBattery = false;
+
 void setup()  
 {
 //  simModem.begin(15200, SERIAL_8N1, 16, 17); 
@@ -72,22 +74,27 @@ void setSensorPwr(bool isON){
 
 void loop()  
 { 
-  updateSolLoggerData();
   readVoltages();
+
+  bool powerSavingEnabled = isPowerSavingEnabled();
   //Serial.println();
   if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
-    setSensorPwr(true);
-    delay(20000);
-    sensorA.update();
-    sensorB.update();
-    setSensorPwr(false);
+    if(!powerSavingEnabled){
+      setSensorPwr(true);
+      delay(20000);
+      sensorA.update();
+      sensorB.update();
+      setSensorPwr(false);
+    }
     sensorsUpToDate = true;
   }
   else if(hubTime.isTimeForSend() || !initialOnlineReport){
     Serial.println("MQTT SEND:");
     sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
     delay(1000);
-    sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
+    if(!powerSavingEnabled){
+      sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
+    }
     sensorsUpToDate = false;
     initialOnlineReport = true;
   }
