@@ -157,9 +157,12 @@ void sendMqtt(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], 
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
 void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const char* topicName){
-  #define _TEMP_STRLEN 100
   char tempStrBuffer[_TEMP_STRLEN];
-  static uint8_t msgId = 0;
+  static uint16_t msgId = 0; /*0;*/  /* TODO:dbg only!!!!*/
+
+  if(msgId >= 288){
+    readyForReboot = true;
+  }
 
   msgId++;
   mqttPayloadBuff[0] = '\0';
@@ -167,6 +170,7 @@ void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BU
   /// Collect data and create mqtt frame
   addVoltageMqttTags(mqttPayloadBuff, tempStrBuffer);
   addSolLoggerMqttTags(mqttPayloadBuff, tempStrBuffer);
+  addESPResetStsMqttTags(mqttPayloadBuff, tempStrBuffer);
   getGNSSaGSMinfo(gsmModem, mqttPayloadBuff, tempStrBuffer);
   
   snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)msgId);
@@ -192,7 +196,6 @@ void sendMqttStatusMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BU
  * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
  */
 void sendMqttBHSensorMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN],const char* topicName, BasicHiveSensor* pBHSensors[], uint8_t numOfBHSensors){
-  #define _TEMP_STRLEN 100
   char tempStrBuffer[_TEMP_STRLEN];
   static uint8_t msgId = 0;
   msgId++;

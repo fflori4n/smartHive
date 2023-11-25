@@ -3,7 +3,7 @@ class BasicHiveSensor {
 
   private:
     char sensorAddressChar;
-    char rawResponseBuff[100];
+    char rawResponseBuff[_TEMP_STRLEN];
 
     bool isUpdated = false;
     int sensorNoConnectionCounter = 0;

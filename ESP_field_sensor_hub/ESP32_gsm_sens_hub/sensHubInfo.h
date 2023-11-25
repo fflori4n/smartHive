@@ -156,7 +156,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[MQTT_PAYLOAD_BU
       snprintf(tempStrBuffer, _TEMP_STRLEN," \"masl\":%s,",gnssHeightStr);
       strcat(mqttPayloadBuff, tempStrBuffer);
     }
-    strcat(mqttPayloadBuff, " \"gps_accuracy\": 1.2,");  /// const tags
+    //strcat(mqttPayloadBuff, " \"gps_accuracy\": 1.2,");  /// const tags
   }
   if(gnssSateliteNumStr[0] != '\0'){                                            /// num of sats, even when no lock
     snprintf(tempStrBuffer, _TEMP_STRLEN," \"sat_no\":%s,",gnssSateliteNumStr);
@@ -170,7 +170,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[MQTT_PAYLOAD_BU
     snprintf(tempStrBuffer, _TEMP_STRLEN," \"rssi\":%s,",rssiStr);
     strcat(mqttPayloadBuff, tempStrBuffer);
   } 
-  strcat(mqttPayloadBuff, " \"con_type\":\"EGPRS\",");                         /// add comm link type
+  //strcat(mqttPayloadBuff, " \"con_type\":\"EGPRS\",");                         /// add comm link type
 
   /// return - mqttPayloadBuff modified, data added!
 }

@@ -34,25 +34,26 @@
 
 /// - DHT SENSOR OBJECTS -
 /// DEFINE DHT SENSORS USED, AND CREATE DHT TYPE OBJECT - COMMENT/UNCOMMENT and CHANGE DHT TYPE
-//#define DHT0_TYPE DHT22
-#define DHT1_TYPE DHT22
-#define DHT2_TYPE DHT22
+#define DHT0_TYPE DHT22
+#define DHT1_TYPE DHT11
+//#define DHT2_TYPE DHT22
 
-#ifdef DHT0_TYPE
-  DHT dht0(DHT0_PIN, DHT0_TYPE);
-#endif
+
 #ifdef DHT1_TYPE
   DHT dht1(DHT1_PIN, DHT1_TYPE);
 #endif
 #ifdef DHT2_TYPE
   DHT dht2(DHT2_PIN, DHT2_TYPE);
 #endif
+#ifdef DHT0_TYPE
+  DHT dht0(DHT0_PIN, DHT0_TYPE);
+#endif
 
 /// - RS485 CONFIG -
 /// RS485 com speed. Keep it low, because of software serial
 #define BAUD 9600
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
-#define THIS_DEV_ADDR 66
+#define THIS_DEV_ADDR 65
 #define MASTER_DEV_ADDR 70
 #define DEV_TYPE_CHAR 'A'
 //#define DEV_IS_MASTER   /// compile with as master (base), or compile as slave (sensor)

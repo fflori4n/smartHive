@@ -118,8 +118,9 @@ void readDHT(DHT &dhtSensor, int &temp, int &humidity) { /// TODO: optimise this
 
     updatedFlag = 0;
     noInterrupts();
-    newTemp = dhtSensor.readTemperature();
     newHumi = dhtSensor.readHumidity();
+    delay(50);
+    newTemp = dhtSensor.readTemperature();
     interrupts();
 
     if (isnan(newTemp) || isnan(newHumi)) {
@@ -223,15 +224,19 @@ void loop() {
     }
   }
 
+//timerSeconds = DHTREAD_PERIOD_SECS + 1;
   if (timerSeconds > DHTREAD_PERIOD_SECS) {
     Serial.println(F("TMR|reading sensors."));
 #ifdef DHT0_TYPE
+    Serial.println(F("DHT|reading sensor 0."));
     readDHT(dht0, dht0Temp, dht0Humi);
 #endif
 #ifdef DHT1_TYPE
+    Serial.println(F("DHT|reading sensor 1."));
     readDHT(dht1, dht1Temp, dht1Humi);
 #endif
 #ifdef DHT2_TYPE
+    Serial.println(F("DHT|reading sensor 2."));
     readDHT(dht2, dht2Temp, dht2Humi);
 #endif
 

@@ -84,4 +84,19 @@ class ESPtime {
       }
       return true;
     }
+
+    /*bool isTimeForESPReboot(){
+      static int8_t prevMin = 0;
+      bool isRebootTime = false;
+      
+      getLocalTime(&now, 0);
+      if((now.tm_hour == 0) && (now.tm_min == 22) && (((now.tm_min - prevMin) == 1) || (abs((now.tm_min - prevMin)) == 59 ))&& (lastRebootReason != 3)){
+        Serial.println("Send it.");
+        lastMqttSend = (int32_t)time(NULL);
+        isRebootTime = true;
+      }
+
+      prevMin = now.tm_min;
+      return isRebootTime; 
+    }*/
 };
