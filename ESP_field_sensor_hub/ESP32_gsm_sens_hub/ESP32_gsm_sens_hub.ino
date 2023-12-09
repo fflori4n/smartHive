@@ -36,14 +36,16 @@ bool initialOnlineReport = false;
 SIM7000 gsmModem = SIM7000();
 RS485Com com485 = RS485Com();
 
-BasicHiveSensor sensorA((char)65,"BHS_A", com485);
-BasicHiveSensor sensorB((char)66,"BHS_B", com485);
+BasicHiveSensor sensorA((char)65, "BHS_A", com485);
+BasicHiveSensor sensorB((char)66, "BHS_B", com485);
 
 
 BasicHiveSensor* bHSensList[2] = {&sensorA, &sensorB};
 ESPtime hubTime;
 
 bool lowBattery = false;
+
+uint8_t resetSimModem = 0;
 
 
 
@@ -52,33 +54,33 @@ void print_reset_reason(uint8_t reason)
 {
   switch (reason)
   {
-    case 1 : Serial.println ("POWERON_RESET");break;          /**<1, Vbat power on reset*/
-    case 3 : Serial.println ("SW_RESET");break;               /**<3, Software reset digital core*/
-    case 4 : Serial.println ("OWDT_RESET");break;             /**<4, Legacy watch dog reset digital core*/
-    case 5 : Serial.println ("DEEPSLEEP_RESET");break;        /**<5, Deep Sleep reset digital core*/
-    case 6 : Serial.println ("SDIO_RESET (WDT)");break;             /**<6, Reset by SLC module, reset digital core*/
-    case 7 : Serial.println ("TG0WDT_SYS_RESET");break;       /**<7, Timer Group0 Watch dog reset digital core*/
-    case 8 : Serial.println ("TG1WDT_SYS_RESET");break;       /**<8, Timer Group1 Watch dog reset digital core*/
-    case 9 : Serial.println ("RTCWDT_SYS_RESET");break;       /**<9, RTC Watch dog Reset digital core*/
-    case 10 : Serial.println ("INTRUSION_RESET");break;       /**<10, Instrusion tested to reset CPU*/
-    case 11 : Serial.println ("TGWDT_CPU_RESET");break;       /**<11, Time Group reset CPU*/
-    case 12 : Serial.println ("SW_CPU_RESET");break;          /**<12, Software reset CPU*/
-    case 13 : Serial.println ("RTCWDT_CPU_RESET");break;      /**<13, RTC Watch dog Reset CPU*/
-    case 14 : Serial.println ("EXT_CPU_RESET");break;         /**<14, for APP CPU, reseted by PRO CPU*/
-    case 15 : Serial.println ("RTCWDT_BROWN_OUT_RESET");break;/**<15, Reset when the vdd voltage is not stable*/
-    case 16 : Serial.println ("RTCWDT_RTC_RESET");break;      /**<16, RTC Watch dog reset digital core and rtc module*/
+    case 1 : Serial.println ("POWERON_RESET"); break;         /**<1, Vbat power on reset*/
+    case 3 : Serial.println ("SW_RESET"); break;              /**<3, Software reset digital core*/
+    case 4 : Serial.println ("OWDT_RESET"); break;            /**<4, Legacy watch dog reset digital core*/
+    case 5 : Serial.println ("DEEPSLEEP_RESET"); break;       /**<5, Deep Sleep reset digital core*/
+    case 6 : Serial.println ("SDIO_RESET (WDT)"); break;            /**<6, Reset by SLC module, reset digital core*/
+    case 7 : Serial.println ("TG0WDT_SYS_RESET"); break;      /**<7, Timer Group0 Watch dog reset digital core*/
+    case 8 : Serial.println ("TG1WDT_SYS_RESET"); break;      /**<8, Timer Group1 Watch dog reset digital core*/
+    case 9 : Serial.println ("RTCWDT_SYS_RESET"); break;      /**<9, RTC Watch dog Reset digital core*/
+    case 10 : Serial.println ("INTRUSION_RESET"); break;      /**<10, Instrusion tested to reset CPU*/
+    case 11 : Serial.println ("TGWDT_CPU_RESET"); break;      /**<11, Time Group reset CPU*/
+    case 12 : Serial.println ("SW_CPU_RESET"); break;         /**<12, Software reset CPU*/
+    case 13 : Serial.println ("RTCWDT_CPU_RESET"); break;     /**<13, RTC Watch dog Reset CPU*/
+    case 14 : Serial.println ("EXT_CPU_RESET"); break;        /**<14, for APP CPU, reseted by PRO CPU*/
+    case 15 : Serial.println ("RTCWDT_BROWN_OUT_RESET"); break; /**<15, Reset when the vdd voltage is not stable*/
+    case 16 : Serial.println ("RTCWDT_RTC_RESET"); break;     /**<16, RTC Watch dog reset digital core and rtc module*/
     default : Serial.println ("NO_MEAN");
   }
 }
-void setup()  
+void setup()
 {
   /* This is not conventional, but the most important part is communication, so to avoid error i set the WDT for msg sending period*/
-  #define WDT_TIMEOUT (uint16_t)((60 * 5)*1.5)
+#define WDT_TIMEOUT (uint16_t)((60 * 5)*2)
   /* start WDT */
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
-  
-//  simModem.begin(15200, SERIAL_8N1, 16, 17); 
+
+  //  simModem.begin(15200, SERIAL_8N1, 16, 17);
   Serial.begin(115200);
   Serial.println("DBG Serial [ OK ]");
   lastRebootReason = esp_reset_reason();
@@ -86,7 +88,7 @@ void setup()
 
   setupDS18B20(sensors);
   readDS18B20(sensors);
-  
+
   gsmModem.init();
   hubTime.useModem(gsmModem);
   solarLogSerial.begin(4800);
@@ -101,32 +103,42 @@ void setup()
   pinMode(SENS_PWR_OFF, OUTPUT);
   digitalWrite(SENS_PWR_ON, LOW);
   digitalWrite(SENS_PWR_OFF, LOW);
-  
+
   setSensorPwr(true);
   hubTime.updateTimeIfNeeded(true);
-} 
 
-void setSensorPwr(bool isON){
-  if(isON){
+  for (int wakeCount = 0; wakeCount < 10; wakeCount++) {                            /// has to be sent a few times to set com speed /// @TODO: this has it's own function in sim7000.h if I remember correctly.
+    if (gsmModem.atPrint("AT\r", "OK", 500) == 0) {
+      break;
+    }
+  }
+  gsmModem.atPrint("AT+CFUN=6\r", "OK", 500);
+  //gsmModem.atPrint("AT+CPSMS?\r","OK",500);
+  //gsmModem.atPrint("AT+CPSMRDP\r","OK",500);
+  gsmModem.atPrint("AT+CPSMS=1,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500); /* go into PSM mode for 10 mins*/
+  //gsmModem.atPrint("AT+CPSMRDP\r","OK",500);
+}
+
+void setSensorPwr(bool isON) {
+  if (isON) {
     digitalWrite(SENS_PWR_ON, HIGH);
     delayMicroseconds(100);
     digitalWrite(SENS_PWR_ON, LOW);
   }
-  else{
+  else {
     digitalWrite(SENS_PWR_OFF, HIGH);
     delay(10);
     digitalWrite(SENS_PWR_OFF, LOW);
   }
 }
 
-void loop()  
-{ 
+void loop()
+{
   readVoltages();
-
   bool powerSavingEnabled = isPowerSavingEnabled();
   //Serial.println();
-  if(!sensorsUpToDate && hubTime.isTimeForSensorUpdate()){
-    if(!powerSavingEnabled){
+  if (!sensorsUpToDate && hubTime.isTimeForSensorUpdate()) {
+    if (!powerSavingEnabled) {
       setSensorPwr(true);
       delay(20000);
       sensorA.update();
@@ -135,24 +147,39 @@ void loop()
     }
     sensorsUpToDate = true;
   }
-  else if(hubTime.isTimeForSend() || !initialOnlineReport){
+  else if (hubTime.isTimeForSend() || !initialOnlineReport) {
     Serial.println("MQTT SEND:");
-    sendMqttStatusMsg(gsmModem,mqttPayloadBuff, "RTU0/RTU_INFO");
+    sendMqttStatusMsg(gsmModem, mqttPayloadBuff, "RTU0/RTU_INFO");
     esp_task_wdt_reset();
     delay(1000);
-    if(!powerSavingEnabled){
-      sendMqttBHSensorMsg(gsmModem,mqttPayloadBuff,"RTU0/BHSENS", bHSensList, 2);
-      
+    if (!powerSavingEnabled) {
+      sendMqttBHSensorMsg(gsmModem, mqttPayloadBuff, "RTU0/BHSENS", bHSensList, 2);
+
     }
+
+    if (resetSimModem >= (4 * 12)) {  /* reset CFUN 6 every 4 hours, for no good reason, but see if it will become more reliable, eventualy hardware power reset should be implemented if modem gets very stuck*/
+      resetSimModem = 0;
+      for (int wakeCount = 0; wakeCount < 10; wakeCount++) {                            /// has to be sent a few times to set com speed /// @TODO: this has it's own function in sim7000.h if I remember correctly.
+        if (gsmModem.atPrint("AT\r", "OK", 500) == 0) {
+          break;
+        }
+      }
+      gsmModem.atPrint("AT+CFUN=6\r", "OK", 500);
+    }
+    else {
+      resetSimModem++;
+    }
+    
+    gsmModem.atPrint("AT+CPSMS=1,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500); /* go into PSM mode for 10 mins*/
     sensorsUpToDate = false;
     initialOnlineReport = true;
   }
   //hubTime.printLocalTime();
   hubTime.updateTimeIfNeeded();
 
-  if(readyForReboot){
+  if (readyForReboot) {
     Serial.println("rebooting ESP!");
     ESP.restart();
   }
-  delay(5000);
+  delay(2000);
 }

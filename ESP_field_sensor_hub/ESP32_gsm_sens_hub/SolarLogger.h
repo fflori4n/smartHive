@@ -1,5 +1,5 @@
 #define MAX_SOL_LOG_MESSAGE 30  /*C00147V12125L0001T 2535*/
-#define SOL_LOG_DISABLED 0
+#define SOL_LOG_DISABLED 1
 #define SOL_LOG_DATA_BUFF_LEN 32
 
 SoftwareSerial solarLogSerial(36, 33); /* Serial has to be inverted, because it is connected via inverting opto coupler, only RX is used*/
@@ -201,10 +201,10 @@ void addSolLoggerMqttTags(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char(&
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
   */
-  if(sol_batTemperature >-99 && sol_chargeCurrent < 99){
+  /*if(sol_batTemperature >-99 && sol_chargeCurrent < 99){
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_bat_temp\":%d.%d,",(int)(sol_batTemperature),(int)(abs(sol_batTemperature)*10)%100);
     strcat(mqttPayloadBuff, tempStrBuffer);
-  }
+  }*/
   /*else{
     snprintf(tempStrBuffer, _TEMP_STRLEN, " \"sol_bat_temp\":None,");
     strcat(mqttPayloadBuff, tempStrBuffer);

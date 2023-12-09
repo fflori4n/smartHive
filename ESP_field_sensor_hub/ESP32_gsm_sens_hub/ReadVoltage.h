@@ -141,8 +141,6 @@ void readVoltages(){
   Serial.println(vBatNow);
   Serial.print("VSOL| ");
   Serial.println(vSolNow);
-  /*Serial.print("TEMP| ");
-  Serial.println(rtuBoxTemp);*/
   
   Serial.print("ADC| ");
   Serial.println(analogRead(VNPIN));
@@ -177,7 +175,12 @@ void addVoltageMqttTags(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char(& t
     Serial.println(F("vSol is out of bounds!"));
   }
   if(rtuBoxTemp0 < 99.99 && rtuBoxTemp0 >= -99){
-    snprintf(tempStrBuffer, _TEMP_STRLEN, " \"box_temp_0\":%d.%d,",(int16_t)(rtuBoxTemp0), ((int16_t)(rtuBoxTemp0*100))%100);
+    if(rtuBoxTemp0 >= 0){
+       snprintf(tempStrBuffer, _TEMP_STRLEN, " \"box_temp_0\":%d.%d,", (int16_t)(abs(rtuBoxTemp0)), ((int16_t)(abs(rtuBoxTemp0)*100))%100);
+    }
+    else{
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"box_temp_0\":-%d.%d,", (int16_t)(abs(rtuBoxTemp0)), ((int16_t)(abs(rtuBoxTemp0)*100))%100);
+    }
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
   else{
@@ -185,7 +188,12 @@ void addVoltageMqttTags(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char(& t
   }
 
   if(rtuBoxTemp1 < 99.99 && rtuBoxTemp1 >= -99){
-    snprintf(tempStrBuffer, _TEMP_STRLEN, " \"box_temp_1\":%d.%d,",(int16_t)(rtuBoxTemp1), ((int16_t)(rtuBoxTemp1*100))%100);
+    if(rtuBoxTemp1 >= 0){
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"box_temp_1\":%d.%d,",(int16_t)(abs(rtuBoxTemp1)), ((int16_t)(abs(rtuBoxTemp1)*100))%100);
+    }
+    else{
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"box_temp_1\":-%d.%d,",(int16_t)(abs(rtuBoxTemp1)), ((int16_t)(abs(rtuBoxTemp1)*100))%100);
+    }
     strcat(mqttPayloadBuff, tempStrBuffer);
   }
   else{
@@ -198,19 +206,19 @@ void addESPResetStsMqttTags(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char
 
   switch(lastRebootReason){
     case -1:
-      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"no_reboot\",");
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"active\",");
       break;
     case 1:
-      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"power_on\",");
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"pwr_on\",");
       break;
     case 3:
-      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"soft_reset\",");
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"soft\",");
       break;
     case 6:
-      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"wdt_timeout\",");
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"watch_dog\",");
       break;
     case 7:
-      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"brown_out_reset\",");
+      snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"brown_out\",");
       break;
     default:
       snprintf(tempStrBuffer, _TEMP_STRLEN, " \"reset\":\"unknown_%d\",",(int)(lastRebootReason));
