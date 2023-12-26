@@ -37,18 +37,18 @@ class ESPtime {
       return settimeofday((const timeval*)&epoch, 0);
     }
 
-    void updateTimeIfNeeded(bool force = false) {
+    int8_t updateTimeIfNeeded(bool force = false) {
       static int32_t lastUpdate = 0;
       if(!force && abs((int32_t)time(NULL) - lastUpdate) < (UPDATE_TIME_PERIOD_MINS*60)){
-        return;
+        return 1;
       }
       Serial.print(F("TIME| system time update."));
       if(!GPStime){
-        return;
+        return 1;
       }
       int32_t newTime = 0;   /// check if time was updated, and get new time from SIM7000
       if(modem.getUnixTm(newTime) != 0 ){
-        return;
+        return -1;
       }
       Serial.print(F("TIME| Old:"));
       printLocalTime();
@@ -57,6 +57,7 @@ class ESPtime {
       Serial.print(F("TIME| New:"));
       printLocalTime();
       Serial.println(F("TIME| [ OK ]"));
+      return 0;
     }
 
     void printLocalTime()

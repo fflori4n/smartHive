@@ -134,6 +134,15 @@ class SIM7000 {
 
   public:
 
+  enum tATResponse{
+        aTresp_unknown = -1,
+        aTresp_noResponse = -2,
+        aTresp_timeout = -3,
+        aTresp_noKeyFound = -4,
+        aTresp_failKeyFound = -5,
+        aTresp_ok = 0
+      };
+
     SIM7000() {
       //GSMModemSerial.begin(GSMBAUD, SERIAL_8N1, GSMRX_PIN, GSMTX_PIN);     ///TODO: for some reason this does not get executed? Some C++ quirk probably, so moved to separate function fix me later
     }
@@ -213,7 +222,6 @@ class SIM7000 {
       return;
     }
 
-
     int atPrint(const char* atCommand, const char* responseOKKey, uint32_t timeout = 5000, const char* responseFAILKey = "ERROR") {
 #define _SIMDEBUG 1
       delay(100);
@@ -226,51 +234,111 @@ class SIM7000 {
       Serial.println(atCommand);
       debugPrintResponse();
 #endif
-
-      uint8_t res = -2;
+      
+      
+      int8_t res = aTresp_unknown;
+      
       this->buffIndex = 0;
-      serInBuff[0] = '\0';
-      while ( res != 0 && (GETELAPSEDMS() < this->timeLimitms)) {
+      serInBuff[buffIndex] = '\0';
+      
+      while ((res != aTresp_ok) && (res != aTresp_failKeyFound) && (GETELAPSEDMS() < this->timeLimitms)) {
         if (readSerial() != 0) {
           delay(10);
           continue;
         }
         serInBuff[buffIndex] = '\0';
-        atCmdRes = -2;
 
+        /* first look for fail key, if fail key is present exit. */
         if (responseFAILKey != "___" && strstr(serInBuff, responseFAILKey) != NULL) {
-          atCmdRes = -1;
+          res = aTresp_failKeyFound;
           break;
         }
-        if (strstr(serInBuff, responseOKKey) != NULL) {
-          atCmdRes = 0;
+        else if (strstr(serInBuff, responseOKKey) != NULL) {
+          res = aTresp_ok;
           break;
         }
       }
+
+      if((res != aTresp_ok) && (res != aTresp_failKeyFound)){
+   
+        if(this->buffIndex == 0){
+          res = aTresp_noResponse;
+        }
+        else if(readSerial() == 0){
+          res = aTresp_timeout;
+        }else{
+          res = aTresp_noKeyFound;
+        }
+      }
+
       serInBuff[buffIndex] = '\0';  /// add terminator at the end of str
       dbgPrintGSMBuffer();
 
       //#ifdef _SIMDEBUG
       Serial.print("AT response: ");
-      switch (atCmdRes) {
-        case 0:
-          Serial.print("[ OK ]");
+      switch (res) {
+        case aTresp_unknown:
+          Serial.println(F("[ UNKNOWN ]"));
           break;
-        case -1:
-          Serial.print("[ FAIL ]");
+        case aTresp_noResponse:
+          Serial.println(F("[ NO RESPONSE ]"));
           break;
-        case -2:
-          Serial.print("[ UNKNOWN ]");
+        case aTresp_timeout:
+          Serial.println(F("[ TIMEOUT ]"));
           break;
-        case -3:
-          Serial.print("[ NO RESP. ]");
+        case aTresp_noKeyFound:
+          Serial.println(F("[ NO KEY ]"));
+          break;
+        case aTresp_failKeyFound:
+          Serial.println(F("[ FAIL KEY ]"));
+          break;
+        case aTresp_ok:
+          Serial.println(F("[ OK ]"));
+          break;
+        default:
           break;
       }
-      Serial.print("\nelapsed: ");
+      Serial.print("elapsed: ");
       Serial.println(GETELAPSEDMS());
       //#endif
 
-      return atCmdRes;
+      return res;
+    }
+
+    /* same as ATprint but perform wakeup first if needed*/
+    int atSend(const char* atCommand, const char* responseOKKey, uint32_t timeout = 5000, const char* responseFAILKey = "ERROR") {
+
+      int res;
+
+      res = this->atPrint(atCommand,responseOKKey,timeout,responseFAILKey);
+      if(res != aTresp_noResponse){
+        return res;
+      }
+      
+      int wakeCount = 0;
+      for (; wakeCount < 10; wakeCount++) {
+        if (this->atPrint("AT\r", "OK", 500) == 0) {
+          delay(200);
+          res = this->atPrint(atCommand,responseOKKey,timeout,responseFAILKey);
+          if(res != aTresp_noResponse){
+            wakeCount = 10;
+            break;
+          }
+        }
+        else{
+          delay(random(100, 5000));
+        }
+      }
+
+      if(!(wakeCount < 10)){
+        Serial.println("[ ER ] modem is not responding to AT");
+      }
+
+      if(res == aTresp_noResponse){
+        atNoResponseCounter++;
+      }
+
+      return res;
     }
 
 

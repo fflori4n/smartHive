@@ -75,7 +75,7 @@ void print_reset_reason(uint8_t reason)
 void setup()
 {
   /* This is not conventional, but the most important part is communication, so to avoid error i set the WDT for msg sending period*/
-#define WDT_TIMEOUT (uint16_t)((60 * 5)*2)
+#define WDT_TIMEOUT (uint16_t)((60 * 5)*1.5)
   /* start WDT */
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -107,18 +107,29 @@ void setup()
   setSensorPwr(true);
   hubTime.updateTimeIfNeeded(true);
 
-  for (int wakeCount = 0; wakeCount < 10; wakeCount++) {                            /// has to be sent a few times to set com speed /// @TODO: this has it's own function in sim7000.h if I remember correctly.
-    if (gsmModem.atPrint("AT\r", "OK", 500) == 0) {
-      break;
-    }
-  }
-  gsmModem.atPrint("AT+CFUN=6\r", "OK", 500);
-  //gsmModem.atPrint("AT+CPSMS?\r","OK",500);
+
+  gsmModem.atSend("AT+IPR=9600\r", "OK", 5000);
+  gsmModem.atSend("AT+CEDUMP=0\r", "OK", 5000);
+  gsmModem.atSend("AT+CFUN=1,1\r", "OK", 15000);
+  gsmModem.atSend("AT\r", "RDY", 60000);
+ // gsmModem.atPrint("AT+CPSMS?\r","OK",500);
   //gsmModem.atPrint("AT+CPSMRDP\r","OK",500);
-  gsmModem.atPrint("AT+CPSMS=1,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500); /* go into PSM mode for 10 mins*/
+ //gsmModem.atSend("AT+CPSMS=0,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500);/* go into PSM mode for 10 mins*/
+ //gsmModem.atSend("AT+CPSMS=0\r","OK",15000);
+ 
   //gsmModem.atPrint("AT+CPSMRDP\r","OK",500);
 }
 
+void sendPowerCycleReq(){
+  pinMode(14, OUTPUT);
+  delay(500);
+  for(int i =0; i < 5; i++){
+  digitalWrite(14, HIGH);
+  delay(500);
+  digitalWrite(14, LOW);
+  delay(1000);
+  }
+  }
 void setSensorPwr(bool isON) {
   if (isON) {
     digitalWrite(SENS_PWR_ON, HIGH);
@@ -148,6 +159,8 @@ void loop()
     sensorsUpToDate = true;
   }
   else if (hubTime.isTimeForSend() || !initialOnlineReport) {
+    Serial.print(F("TIME| "));
+    hubTime.printLocalTime();
     Serial.println("MQTT SEND:");
     sendMqttStatusMsg(gsmModem, mqttPayloadBuff, "RTU0/RTU_INFO");
     esp_task_wdt_reset();
@@ -157,29 +170,36 @@ void loop()
 
     }
 
-    if (resetSimModem >= (4 * 12)) {  /* reset CFUN 6 every 4 hours, for no good reason, but see if it will become more reliable, eventualy hardware power reset should be implemented if modem gets very stuck*/
+    mqttMsgId++;
+
+    if(mqttMsgId >= (12 * 24)){
+      readyForReboot = true;
+    }
+
+    if (resetSimModem >= (6 * 12)) {  /* reset CFUN 6 every 4 hours, for no good reason, but see if it will become more reliable, eventualy hardware power reset should be implemented if modem gets very stuck*/
       resetSimModem = 0;
-      for (int wakeCount = 0; wakeCount < 10; wakeCount++) {                            /// has to be sent a few times to set com speed /// @TODO: this has it's own function in sim7000.h if I remember correctly.
-        if (gsmModem.atPrint("AT\r", "OK", 500) == 0) {
-          break;
-        }
-      }
-      gsmModem.atPrint("AT+CFUN=6\r", "OK", 500);
+      gsmModem.atSend("AT+CFUN=1,1\r", "OK", 15000);
+      gsmModem.atSend("AT\r", "RDY", 60000);
     }
     else {
       resetSimModem++;
     }
     
-    gsmModem.atPrint("AT+CPSMS=1,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500); /* go into PSM mode for 10 mins*/
+    /*gsmModem.atSend("AT+CPSMS=1,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500); *//* go into PSM mode for 10 mins*/
     sensorsUpToDate = false;
     initialOnlineReport = true;
   }
   //hubTime.printLocalTime();
-  hubTime.updateTimeIfNeeded();
+  if(0 != hubTime.updateTimeIfNeeded()){  /* 1 - no update needed */
+     esp_task_wdt_reset();  /* reset WDT if time was updated successfully*/
+  }
 
   if (readyForReboot) {
     Serial.println("rebooting ESP!");
     ESP.restart();
+  }
+  if(powerKeyCycle == true){
+    sendPowerCycleReq();
   }
   delay(2000);
 }

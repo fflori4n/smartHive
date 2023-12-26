@@ -6,7 +6,7 @@ void getSubstring(char* destination, char* source, uint8_t startIndex, uint8_t e
 }
 void wakeUpAT(SIM7000& gsmModem){     /// AT has to be sent a few times to set com speed
   for(byte i=0; i<10; i++){                                  
-    if(gsmModem.atPrint("AT\r","OK",500) == 0){
+    if(gsmModem.atSend("AT\r","OK",500) == 0){
       break;
     }
   }
@@ -40,7 +40,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[MQTT_PAYLOAD_BU
 
   #define _GNSS_GSM_VERBOSE 1
 
-  wakeUpAT(gsmModem);
+  //wakeUpAT(gsmModem);
 
   /// GET RSSI INFO
 
@@ -51,7 +51,7 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[MQTT_PAYLOAD_BU
     31 - 52 dBm or greater
     99 not known or not detectable*/
 
-  if(gsmModem.atPrint("AT+CSQ\r","OK") == 0){   
+  if(gsmModem.atSend("AT+CSQ\r","OK") == 0){   
     const int RSSILUT[] = {115, 111, 110, 109, 107, 105, 103, 101, 99, 97, 95, 93, 91, 89, 87, 85, 83, 81, 79, 77, 75, 73, 71, 69, 67, 65, 63, 61, 59, 57, 55, 53};
     char* csqRespStr = gsmModem.getInBuffer();
     int startIndex = (strstr(csqRespStr, "+CSQ: ") + 6) - csqRespStr;
@@ -81,8 +81,8 @@ void getGNSSaGSMinfo(SIM7000& gsmModem, char (& mqttPayloadBuff)[MQTT_PAYLOAD_BU
   }
 
   /// GET GNSS INFO
-  gsmModem.atPrint("AT+CGNSPWR=1\r","OK");
-  int res = gsmModem.atPrint("AT+CGNSINF\r","+CGNSINF: 1,1",5000,"+CGNSINF: 1,0");
+  gsmModem.atSend("AT+CGNSPWR=1\r","OK");
+  int res = gsmModem.atSend("AT+CGNSINF\r","+CGNSINF: 1,1",5000,"+CGNSINF: 1,0");
   
 #ifdef _GNSS_GSM_VERBOSE
   if(res == -1){Serial.println("GNSS| PWR on, No fix.");}

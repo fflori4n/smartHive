@@ -87,6 +87,7 @@ void goIdle() { /// From: https://rubenlaguna.com/post/2008-10-15-arduino-sleep-
   // THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
   sleep_disable(); // first thing after waking from sleep:
   power_all_enable();
+  
 }
 
 ISR( TIMER1_COMPA_vect )

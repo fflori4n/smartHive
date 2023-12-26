@@ -69,7 +69,6 @@ void setupDS18B20(DallasTemperature& sensors){
 
 void readDS18B20(DallasTemperature& sensors){
   sensors.requestTemperatures();
-  Serial.println("DONE");
 
   float tempC = sensors.getTempC(hub_temp0);
   if(tempC == DEVICE_DISCONNECTED_C) 
@@ -136,7 +135,7 @@ void readVoltages(){
     } 
   }
 
- #if 1
+ #if 0
   Serial.print("VBAT| ");
   Serial.println(vBatNow);
   Serial.print("VSOL| ");
