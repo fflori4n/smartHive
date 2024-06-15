@@ -12,14 +12,20 @@ OneWire oneWire(HUBDS18B20_ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 DeviceAddress hub_temp0, hub_temp1;
 
+#include <HardwareSerial.h>
 #include <esp_task_wdt.h>
 #include "RS485Com.h"
 #include "BasicHiveSensor.h"
 #include "sim7000.h"
-#include "sensHubInfo.h"
+
 #include "ReadVoltage.h"
 #include "SolarLogger.h"
 #include "wifiFunctions.h"
+
+HardwareSerial GSMserial(2);
+SimModem simModem(GSMserial);
+
+#include "sensHubInfo.h"
 #include "Mqtt.h"
 #include "ESPtime.h"
 
@@ -33,7 +39,8 @@ char tempStrBuffer[_TEMP_STRLEN];
 bool sensorsUpToDate = false;
 bool initialOnlineReport = false;
 
-SIM7000 gsmModem = SIM7000();
+
+
 RS485Com com485 = RS485Com();
 
 BasicHiveSensor sensorA((char)65, "BHS_A", com485);
@@ -88,11 +95,9 @@ void setup()
 
   setupDS18B20(sensors);
   readDS18B20(sensors);
-
-  gsmModem.init();
-  hubTime.useModem(gsmModem);
-  solarLogSerial.begin(4800);
-  delay(2000);
+  //
+  int8_t er = simModem.begin(9600);
+  Serial.println(er);
 
   /// pin for reading voltages
   pinMode(VNPIN, INPUT);
@@ -107,29 +112,26 @@ void setup()
   setSensorPwr(true);
   hubTime.updateTimeIfNeeded(true);
 
+  simModem.setBaseConfig();
 
-  gsmModem.atSend("AT+IPR=9600\r", "OK", 5000);
-  gsmModem.atSend("AT+CEDUMP=0\r", "OK", 5000);
-  gsmModem.atSend("AT+CFUN=1,1\r", "OK", 15000);
-  gsmModem.atSend("AT\r", "RDY", 60000);
- // gsmModem.atPrint("AT+CPSMS?\r","OK",500);
+  // gsmModem.atPrint("AT+CPSMS?\r","OK",500);
   //gsmModem.atPrint("AT+CPSMRDP\r","OK",500);
- //gsmModem.atSend("AT+CPSMS=0,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500);/* go into PSM mode for 10 mins*/
- //gsmModem.atSend("AT+CPSMS=0\r","OK",15000);
- 
+  //gsmModem.atSend("AT+CPSMS=0,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500);/* go into PSM mode for 10 mins*/
+  //gsmModem.atSend("AT+CPSMS=0\r","OK",15000);
+
   //gsmModem.atPrint("AT+CPSMRDP\r","OK",500);
 }
 
-void sendPowerCycleReq(){
+void sendPowerCycleReq() {
   pinMode(14, OUTPUT);
   delay(500);
-  for(int i =0; i < 5; i++){
-  digitalWrite(14, HIGH);
-  delay(500);
-  digitalWrite(14, LOW);
-  delay(1000);
+  for (int i = 0; i < 5; i++) {
+    digitalWrite(14, HIGH);
+    delay(500);
+    digitalWrite(14, LOW);
+    delay(1000);
   }
-  }
+}
 void setSensorPwr(bool isON) {
   if (isON) {
     digitalWrite(SENS_PWR_ON, HIGH);
@@ -147,59 +149,63 @@ void loop()
 {
   readVoltages();
   bool powerSavingEnabled = isPowerSavingEnabled();
-  //Serial.println();
+  
+  //    if (mqttMsgId >= (12 * 24)) {
+  //      readyForReboot = true;
+  //    }
+  //
+  //    if (resetSimModem >= (6 * 12)) {  /* reset CFUN 6 every 4 hours, for no good reason, but see if it will become more reliable, eventualy hardware power reset should be implemented if modem gets very stuck*/
+  //      resetSimModem = 0;
+  //      gsmModem.atSend("AT+CFUN=1,1\r", "OK", 15000);
+  //      gsmModem.atSend("AT\r", "RDY", 60000);
+  //    }
+  //    else {
+  //      resetSimModem++;
+  //    }
+  //
+  //    /*gsmModem.atSend("AT+CPSMS=1,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500); *//* go into PSM mode for 10 mins*/
+  //    sensorsUpToDate = false;
+  //    initialOnlineReport = true;
+  //  }
+  //  //hubTime.printLocalTime();
+  //  if (0 != hubTime.updateTimeIfNeeded()) { /* 1 - no update needed */
+  //      /* reset WDT if time was updated successfully*/
+  //  }
+  //
+  //  
+  //  if (powerKeyCycle == true) {
+  //    sendPowerCycleReq();
+  //  }
+
   if (!sensorsUpToDate && hubTime.isTimeForSensorUpdate()) {
-    if (!powerSavingEnabled) {
+    
       setSensorPwr(true);
       delay(20000);
       sensorA.update();
       sensorB.update();
-      setSensorPwr(false);
-    }
+      /*setSensorPwr(false);*/
     sensorsUpToDate = true;
   }
   else if (hubTime.isTimeForSend() || !initialOnlineReport) {
-    Serial.print(F("TIME| "));
-    hubTime.printLocalTime();
-    Serial.println("MQTT SEND:");
-    sendMqttStatusMsg(gsmModem, mqttPayloadBuff, "RTU0/RTU_INFO");
-    esp_task_wdt_reset();
+
+    simModem.connectToNetwork();
+    simModem.getGNSSData();
+    simModem.getRSSI();
+    if (0 != hubTime.updateTimeIfNeeded(true)) { /* 1 - no update needed */
+      esp_task_wdt_reset(); /* reset WDT if time was updated successfully*/
+    }
+    sendMqttStatusMsg(mqttPayloadBuff, "RTU0/RTU_INFO");
     delay(1000);
-    if (!powerSavingEnabled) {
-      sendMqttBHSensorMsg(gsmModem, mqttPayloadBuff, "RTU0/BHSENS", bHSensList, 2);
-
-    }
-
-    mqttMsgId++;
-
-    if(mqttMsgId >= (12 * 24)){
-      readyForReboot = true;
-    }
-
-    if (resetSimModem >= (6 * 12)) {  /* reset CFUN 6 every 4 hours, for no good reason, but see if it will become more reliable, eventualy hardware power reset should be implemented if modem gets very stuck*/
-      resetSimModem = 0;
-      gsmModem.atSend("AT+CFUN=1,1\r", "OK", 15000);
-      gsmModem.atSend("AT\r", "RDY", 60000);
-    }
-    else {
-      resetSimModem++;
-    }
-    
-    /*gsmModem.atSend("AT+CPSMS=1,\"01100000\",\"00000000\",\"00000001\",\"01011100\"\r", "OK", 500); *//* go into PSM mode for 10 mins*/
     sensorsUpToDate = false;
     initialOnlineReport = true;
-  }
-  //hubTime.printLocalTime();
-  if(0 != hubTime.updateTimeIfNeeded()){  /* 1 - no update needed */
-     esp_task_wdt_reset();  /* reset WDT if time was updated successfully*/
+     /* sendMqttBHSensorMsg(mqttPayloadBuff, "RTU0/BHSENS", bHSensList, 2);*/
   }
 
-  if (readyForReboot) {
+  if (mqttMsgId >= (12 * 24)) {
     Serial.println("rebooting ESP!");
     ESP.restart();
   }
-  if(powerKeyCycle == true){
-    sendPowerCycleReq();
-  }
+
   delay(2000);
+  
 }

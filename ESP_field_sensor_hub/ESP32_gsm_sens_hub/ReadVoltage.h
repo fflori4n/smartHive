@@ -78,8 +78,8 @@ void readDS18B20(DallasTemperature& sensors){
   }
 
   rtuBoxTemp0 = tempC;
-  //Serial.print("hub_temp0 Temp C: ");
-  //Serial.print(tempC);
+  /*Serial.print("hub_temp0 Temp C: ");
+  Serial.print(tempC);*/
 
   tempC = sensors.getTempC(hub_temp1);
   if(tempC == DEVICE_DISCONNECTED_C) 
@@ -87,8 +87,8 @@ void readDS18B20(DallasTemperature& sensors){
     Serial.println("Error: Could not read temperature data");
     return;
   }
-  //Serial.print("hub_temp1 Temp C: ");
-  //Serial.print(tempC);
+  /*Serial.print("hub_temp1 Temp C: ");
+  Serial.print(tempC);*/
   rtuBoxTemp1 = tempC;
 }
 void readVoltages(){
@@ -135,8 +135,8 @@ void readVoltages(){
     } 
   }
 
- #if 0
-  Serial.print("VBAT| ");
+
+  /*Serial.print("VBAT| ");
   Serial.println(vBatNow);
   Serial.print("VSOL| ");
   Serial.println(vSolNow);
@@ -144,7 +144,12 @@ void readVoltages(){
   Serial.print("ADC| ");
   Serial.println(analogRead(VNPIN));
   Serial.println(analogRead(VPPIN));
- #endif
+
+  Serial.print("TEMP0| ");
+  Serial.print(rtuBoxTemp0);
+  Serial.print(",TEMP1| ");
+  Serial.println(rtuBoxTemp1);*/
+
 }
 
 bool isPowerSavingEnabled(){

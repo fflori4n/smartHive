@@ -10,8 +10,8 @@ class ESPtime {
     const int32_t gmtOffset_sec = 3600*2;       /// CET GMT+2
     //const int   daylightOffset_sec = 3600;    /// I refuse to use it.
     const char* ntpServer = "pool.ntp.org";
-    SIM7000 modem;
-    bool GPStime = false;
+    /*SIM7000 modem;*/
+    /*bool GPStime = false;*/
 
     bool timeUpdated = -1;
 
@@ -27,10 +27,10 @@ class ESPtime {
 
       // configTime(gmtOffset_sec, daylightOffset_sec);
     };
-    void useModem(SIM7000 &gsmModem) {
+   /* void useModem(SIM7000 &gsmModem) {
       this->modem = gsmModem;
       this->GPStime = true;
-    }
+    }*/
 
     int setUnixtime(int32_t unixtime) {
       timeval epoch = {unixtime, 0};
@@ -43,21 +43,20 @@ class ESPtime {
         return 1;
       }
       Serial.print(F("TIME| system time update."));
-      if(!GPStime){
-        return 1;
-      }
-      int32_t newTime = 0;   /// check if time was updated, and get new time from SIM7000
-      if(modem.getUnixTm(newTime) != 0 ){
+
+      if(simModem.simformation.gnss_unixTime <= 1718222292){
         return -1;
       }
+
       Serial.print(F("TIME| Old:"));
       printLocalTime();
-      setUnixtime((newTime + gmtOffset_sec));
+      setUnixtime((simModem.simformation.gnss_unixTime + gmtOffset_sec));
       lastUpdate = (int32_t)time(NULL);
       Serial.print(F("TIME| New:"));
       printLocalTime();
       Serial.println(F("TIME| [ OK ]"));
       return 0;
+      
     }
 
     void printLocalTime()
