@@ -1,8 +1,7 @@
 #include <SoftwareSerial.h> /// probably will be removed
+#include <DHT.h>
 
-#define DHT_DEBUG
-
-#include "DHT.h"
+/*#include "DHT.h"*/
 #include "setup.h"
 #include "RS485Com.h"
 #include <avr/power.h>
@@ -14,6 +13,9 @@ volatile unsigned long motionCount = 0;
 
 uint8_t tiltSensors = 0x00;
 uint8_t pIRsensors = 0;
+
+uint16_t msSinceLastReport = 0;
+uint16_t msMotion = 0;
 
 int dht0Temp = -999;  /// int representation of float value, truncated to 1 decimal, and multiplied by 10, would be -99.9
 int dht0Humi = -999;
@@ -71,6 +73,8 @@ void setup() {
   TIMSK1 |= (1 << OCIE1A);
   interrupts();
   powerOnCompleted = false;
+
+  serial485.begin(BAUD);
 }
 void goIdle() { /// From: https://rubenlaguna.com/post/2008-10-15-arduino-sleep-mode-waking-up-when-receiving-data-on-the-usart/
 
@@ -87,7 +91,7 @@ void goIdle() { /// From: https://rubenlaguna.com/post/2008-10-15-arduino-sleep-
   // THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
   sleep_disable(); // first thing after waking from sleep:
   power_all_enable();
-  
+
 }
 
 ISR( TIMER1_COMPA_vect )
@@ -107,6 +111,7 @@ void readDHT(DHT &dhtSensor, int &temp, int &humidity) { /// TODO: optimise this
 #define MAX_DHT_HUMI 100
 #define MIN_DHT_HUMI 0
 #define RETRY_DHT_READ 10
+
 #define AVERAGE_FILTER_NEW_WEIGHT 1 /// 1 to disable filtering. if sensor works in power saving mode.
   //#define KEEP_VALUES_IF_UPDATE_FAILS
 #define PAUSE_BETWEEN_SENS_READS 2500
@@ -122,6 +127,7 @@ void readDHT(DHT &dhtSensor, int &temp, int &humidity) { /// TODO: optimise this
     newHumi = dhtSensor.readHumidity();
     delay(50);
     newTemp = dhtSensor.readTemperature();
+
     interrupts();
 
     if (isnan(newTemp) || isnan(newHumi)) {
@@ -195,6 +201,10 @@ void readDHT(DHT &dhtSensor, int &temp, int &humidity) { /// TODO: optimise this
   }
 }
 
+uint16_t readPirState() {
+
+}
+
 void loop() {
   //Serial.println(F("Sleep"));
   if (powerOnCompleted) {
@@ -202,17 +212,33 @@ void loop() {
   }
   //Serial.println(F("Woke up."));
 
+  if (serial.isAvailable() == 0) {
+    while (serial.isAvailable() == 0) {
+      if (serial.checkInbuf() == 0 && serial.chkIfPoll() == 0) {
+        serial.respond2Poll(dht0Temp, dht0Humi, dht1Temp, dht1Humi, dht2Temp, dht2Humi, tiltSensors, pIRsensors);
+        noComError = false;
+        secondsSincePoll = 0;
+        pIRsensors = 0;
 
-  while (serial.isAvailable() == 0) {
-    if (serial.checkInbuf() == 0 && serial.chkIfPoll() == 0) {
-      serial.respond2Poll(dht0Temp, dht0Humi, dht1Temp, dht1Humi, dht2Temp, dht2Humi, tiltSensors, pIRsensors);
-      noComError = false;
-      secondsSincePoll = 0;
-      pIRsensors = 0;
+        msSinceLastReport = 0;
+        msMotion = 0;
+      }
+      delay(20);
     }
-    delay(20);
+    //interrupts();
   }
-  //interrupts();
+  else {
+    delay(100);
+    msSinceLastReport += 100;
+
+    if(digitalRead(PIR_PIN)){
+      msMotion += 100;
+    }
+
+    Serial.println(msMotion);
+    Serial.println(msSinceLastReport);
+  }
+
 
   if (!powerOnCompleted) {
     if (timerSeconds > WAITS_ON_POWERON) {
@@ -225,9 +251,12 @@ void loop() {
     }
   }
 
-//timerSeconds = DHTREAD_PERIOD_SECS + 1;
+  timerSeconds = DHTREAD_PERIOD_SECS + 1;
   if (timerSeconds > DHTREAD_PERIOD_SECS) {
-    Serial.println(F("TMR|reading sensors."));
+
+    /* Next line is essential to get successful sensor reading after, no idea why.*/
+    dht1.readHumidity();
+    /*Serial.println(F("TMR|reading sensors."));*/
 #ifdef DHT0_TYPE
     Serial.println(F("DHT|reading sensor 0."));
     readDHT(dht0, dht0Temp, dht0Humi);
@@ -241,15 +270,19 @@ void loop() {
     readDHT(dht2, dht2Temp, dht2Humi);
 #endif
 
-    if ((!MOTION_TRIGGER_MODE && motionCount > 0) || (motionCount > MOTION_ACTIVATE_PROP * timerSeconds)) {
-      Serial.print(F("PIR| Detected!"));
-      pIRsensors = 1;
-    }
-    else {
-      Serial.print(F("PIR| No motion!"));
-    }
-    motionCount = 0;
-    timerSeconds = 0;
+    dht0Temp = ((double)msMotion/(double)(msSinceLastReport + 1)) * 1000;
+    Serial.print("MOTION: ");
+    Serial.println(dht0Temp);
+
+    /* if ((!MOTION_TRIGGER_MODE && motionCount > 0) || (motionCount > MOTION_ACTIVATE_PROP * timerSeconds)) {
+       Serial.print(F("PIR| Detected!"));
+       pIRsensors = 1;
+      }
+      else {
+       Serial.print(F("PIR| No motion!"));
+      }
+      motionCount = 0;
+      timerSeconds = 0;*/
   }
   if (secondsSincePoll > ER_NOPOLL_SECONDS) {
     noComError = true;

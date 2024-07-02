@@ -22,7 +22,7 @@
 //    }
 //  }
 //  if(i>9 && gsmModem.atSend("AT\r","OK",500) == -3){
-//    Serial.println("[ ER ] modem is not responding to AT");
+//    DebugSerial.println("[ ER ] modem is not responding to AT");
 //    return -1;
 //  } */
 //  
@@ -56,22 +56,22 @@
 //    gsmModem.atSend("AT+SMCONF=\"KEEPTIME\",60\r","OK"); /// List Mqtt Settings
 //  }
 //  if(gsmModem.atSend("AT+SMCONN\r","OK", 10000, "ERROR") != 0){
-//    Serial.println("MQTT| probably not connected-server might be offline. ");
+//    DebugSerial.println("MQTT| probably not connected-server might be offline. ");
 //  }
 //
 //  snprintf(mqttTopicATCMD, sizeof(mqttTopicATCMD)/sizeof(char), "AT+SMPUB=\"%s\",\"%d\",1,1\r", mqttTopic, strlen(mqttPayloadBuff));
 //
-//  Serial.print("MQTT| topic:");
-//  Serial.println(mqttTopicATCMD);
-//  Serial.print("MQTT| sending:");
-//  Serial.println(mqttPayloadBuff);
+//  DebugSerial.print("MQTT| topic:");
+//  DebugSerial.println(mqttTopicATCMD);
+//  DebugSerial.print("MQTT| sending:");
+//  DebugSerial.println(mqttPayloadBuff);
 //
 //  gsmModem.atSend(mqttTopicATCMD,">");
 //  if(gsmModem.atSend(mqttPayloadBuff,"OK") == 0){
-//    Serial.println("MQTT| sent. [ OK ]");
+//    DebugSerial.println("MQTT| sent. [ OK ]");
 //  } 
 //  else{
-//    Serial.println("MQTT| [ Error ]");  
+//    DebugSerial.println("MQTT| [ Error ]");  
 //  }
 //  gsmModem.atSend("AT+SMDISC\r","OK"); 
 // // gsmModem.atSend("AT+SMDISC\r","OK");
@@ -109,26 +109,26 @@ int sendMqttWLAN(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const char* mqt
 
   client.setServer(mqttServer, mqttPort);
 
-  Serial.println(F("WLAN-MQTT| Connecting to broker."));
+  DebugSerial.println(F("WLAN-MQTT| Connecting to broker."));
   for(int i=0; !client.connected(); i++){
     client.connect(mqttClientName);             /// mqttUser, mqttPassword 
     delay(MQTT_CHECKIF_CONNECTED);
     if(i > (MQTT_CONNECT_TIMEOUT/MQTT_CHECKIF_CONNECTED)){
-      Serial.println(F("WLAN-MQTT|[ER] Can't connect to server- timeout."));
-      Serial.print(F("WLAN-MQTT| failed with status: "));
-      Serial.println(client.state());
+      DebugSerial.println(F("WLAN-MQTT|[ER] Can't connect to server- timeout."));
+      DebugSerial.print(F("WLAN-MQTT| failed with status: "));
+      DebugSerial.println(client.state());
       return -1;
     }
   }
-  Serial.println(F("WLAN-MQTT| Connected."));
-  Serial.print(F("WLAN-MQTT| Sending: "));
-  Serial.println(mqttPayloadBuff);
+  DebugSerial.println(F("WLAN-MQTT| Connected."));
+  DebugSerial.print(F("WLAN-MQTT| Sending: "));
+  DebugSerial.println(mqttPayloadBuff);
   int res = client.publish(mqttTopic, mqttPayloadBuff,strlen(mqttPayloadBuff)); //
   if (res == 0) {                                       /// pubsub returns false if write is not successfull.
-    Serial.println(F("WLAN-MQTT|[ER] falied to send mqtt msg!"));
+    DebugSerial.println(F("WLAN-MQTT|[ER] falied to send mqtt msg!"));
     return -1;
   }
-  Serial.println(F("WLAN-MQTT|[OK] msg sent!"));
+  DebugSerial.println(F("WLAN-MQTT|[OK] msg sent!"));
   return 0;
 }
 
@@ -183,41 +183,41 @@ void sendMqttStatusMsg(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const cha
   snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", mqttMsgId);
   strcat(mqttPayloadBuff, tempStrBuffer);
   strcat(mqttPayloadBuff, " }\r");                                                                    /// !! the \r is very important, plese do not delete
-  Serial.println(mqttPayloadBuff);
+  DebugSerial.println(mqttPayloadBuff);
 
   /// TODO: should call mqtt send from here...
   sendMqtt(mqttPayloadBuff,topicName);
   
 }
 
-///**
-// * Takes:
-// *  - ref. to SIM7000 object
-// *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
-// *  - array of pointers to 'BasicHiveSensor's
-// *  - number of p in pArray
-// * Returns:
-// *  -*- modifies string in mqttPayloadBuff
-// *  
-// * function gathers data from 'BasicHiveSensor' sensors and puts them into mqtt buffer
-// * 
-// * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
-// */
-//void sendMqttBHSensorMsg(SIM7000& gsmModem,char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN],const char* topicName, BasicHiveSensor* pBHSensors[], uint8_t numOfBHSensors){
-//  char tempStrBuffer[_TEMP_STRLEN];
-//
-//  mqttPayloadBuff[0] = '\0';
-//  strcat(mqttPayloadBuff, "{"); 
-//  /// Collect data and create mqtt frame
-//  for(int i=0; i<numOfBHSensors; i++){
-//    pBHSensors[i]->addMqttTags(mqttPayloadBuff, tempStrBuffer);
-//  }
-//
-//  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)mqttMsgId);
-//  strcat(mqttPayloadBuff, tempStrBuffer);
-//  strcat(mqttPayloadBuff, " }\r");                                                                    /// !! the \r is very important, plese do not delete
-//  Serial.println(mqttPayloadBuff);
-//
-//  /// TODO: should call mqtt send from here...
-//  sendMqtt(gsmModem,mqttPayloadBuff, topicName);
-//}
+/**
+ * Takes:
+ *  - ref. to SIM7000 object
+ *  - ref. to mqtt Str buffer which is of defined length, buffer should be empty, but TODO: check if it's empty
+ *  - array of pointers to 'BasicHiveSensor's
+ *  - number of p in pArray
+ * Returns:
+ *  -*- modifies string in mqttPayloadBuff
+ *  
+ * function gathers data from 'BasicHiveSensor' sensors and puts them into mqtt buffer
+ * 
+ * ! uses char mqttPayloadBuffer[500] = "{"; from global scope
+ */
+void sendMqttBHSensorMsg(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN],const char* topicName, BasicHiveSensor* pBHSensors[], uint8_t numOfBHSensors){
+  char tempStrBuffer[_TEMP_STRLEN];
+
+  mqttPayloadBuff[0] = '\0';
+  strcat(mqttPayloadBuff, "{"); 
+  /// Collect data and create mqtt frame
+  for(int i=0; i<numOfBHSensors; i++){
+    pBHSensors[i]->addMqttTags(mqttPayloadBuff, tempStrBuffer);
+  }
+
+  snprintf(tempStrBuffer, sizeof(tempStrBuffer)/sizeof(char), " \"msg_id\":%d", (int)mqttMsgId);
+  strcat(mqttPayloadBuff, tempStrBuffer);
+  strcat(mqttPayloadBuff, " }\r");                                                                    /// !! the \r is very important, plese do not delete
+  DebugSerial.println(mqttPayloadBuff);
+
+  /// TODO: should call mqtt send from here...
+  sendMqtt(mqttPayloadBuff, topicName);
+}

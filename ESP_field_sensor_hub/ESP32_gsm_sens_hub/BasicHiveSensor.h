@@ -93,14 +93,14 @@ class BasicHiveSensor {
 
 
       for (int i = 0; i < 8; i++) {
-        Serial.println(dhtCsvData[i]);
+        DebugSerial.println(dhtCsvData[i]);
       }
     }
   public:
 
     BasicHiveSensor(const char &address, char* sensName, RS485Com &serialUsed, uint8_t readTimeOut = 5000, uint8_t numRetryIfNoResponse = 5) : serial(serialUsed) {
       if (address == '\0') {
-        Serial.println(F("Sensor can't have address 0"));
+        DebugSerial.println(F("Sensor can't have address 0"));
         return;
       }
       sensorAddressChar = address;
@@ -116,7 +116,7 @@ class BasicHiveSensor {
           /// wait for x millis for sensor response.
           for (int i = 0; i < readTimeOut; i += CHKDELAY) {
             if (serial.checkInbuf('A', sensorAddressChar) == 0) { /// only accept response from TYPE A - Basic hive sensor and from this->sensor's address
-              Serial.println(F("[ OK ] Sensor reachable"));
+              DebugSerial.println(F("[ OK ] Sensor reachable"));
               parseCSV();
               isUpdated = true;
               return 0;
@@ -125,9 +125,10 @@ class BasicHiveSensor {
           }
         }
         else {
-          Serial.println(F("[ ER ] poll req. timeout: "));
-          Serial.print(sensorAddressChar);
+          DebugSerial.println(F("[ ER ] poll req. timeout: "));
+          DebugSerial.print(sensorAddressChar);
         }
+        delay(8000);
       }
       isUpdated = false;
       return -1;
@@ -138,7 +139,7 @@ class BasicHiveSensor {
       dtostrf(dNumber, 4, 2, outBuff);
     }
 
-    void addMqttTags(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char(& tempStrBuffer)[_TEMP_STRLEN]) {
+    void addMqttTags(char(& mqttPayloadBuff)[2048], char(& tempStrBuffer)[200]) {
       char doubleConvBuff[15];
 
       if(!isUpdated){   /// do not add values if sensor was unreachable at last poll.

@@ -1,9 +1,6 @@
 #define DHTPIN 3     // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT11   // DHT 11
 
-void readDHT(){
-  
-}
 /// Using #include "DHT.h" - some built in arduino function or whatever
 class DHTSensor{
   private:

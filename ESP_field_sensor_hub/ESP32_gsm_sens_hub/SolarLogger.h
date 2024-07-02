@@ -19,7 +19,7 @@ char solLogData[SOL_LOG_DATA_BUFF_LEN];
 
 void printCharArray(){
   for(int i=0; i < SOL_LOG_DATA_BUFF_LEN; i++){
-    Serial.print(solLogData[i]);
+    DebugSerial.print(solLogData[i]);
   }
 }
 int8_t updateSolLoggerData(){
@@ -43,12 +43,12 @@ int8_t updateSolLoggerData(){
     if(i < SOL_LOG_DATA_BUFF_LEN){/*inChar != ' ' &&*/
       solLogData[i] = inChar;
       i++;
-      Serial.print(inChar);
+      DebugSerial.print(inChar);
     }
   }
  /* Serial.println(solLogData);*/
   if(numOfCharsRead >= MAX_SOL_LOG_MESSAGE){
-    Serial.println("SOLLOG | [ WR ] msg too long");
+    DebugSerial.println("SOLLOG | [ WR ] msg too long");
     for(int readChars=0; solarLogSerial.available() && (readChars <= 1000); readChars++){
       solarLogSerial.read();
     }
@@ -78,8 +78,8 @@ int8_t updateSolLoggerData(){
                 sol_chargeCurrent = (int16_t)( (((float)sol_chargeCurrent) * 0.95) + (((float)new_sol_chargeCurrent) * 0.05) );
               }
             }
-            Serial.print("charge_current: ");
-            Serial.println(sol_chargeCurrent);
+            DebugSerial.print("charge_current: ");
+            DebugSerial.println(sol_chargeCurrent);
           }
     }
 
@@ -103,8 +103,8 @@ int8_t updateSolLoggerData(){
                 sol_voltage = (int16_t)((((float)sol_voltage) * 0.98) + (((float)new_sol_voltage) * 0.02));
               }
             }
-            Serial.print("Voltage: ");
-            Serial.println(sol_voltage);
+            DebugSerial.print("Voltage: ");
+            DebugSerial.println(sol_voltage);
           }
     }
 
@@ -118,8 +118,8 @@ int8_t updateSolLoggerData(){
           }
           if(alphanumeric){
             sol_light =((solLogData[i+1] - '0') * 1000) + ((solLogData[i+2] - '0') * 100) + ((solLogData[i+3] - '0') * 10) + ((solLogData[i+4] - '0') * 1);
-            Serial.print("light: ");
-            Serial.println(sol_light);
+            DebugSerial.print("light: ");
+            DebugSerial.println(sol_light);
           }
     }
 
@@ -136,8 +136,8 @@ int8_t updateSolLoggerData(){
             if(solLogData[i+1] - '-' == 0){
               sol_batTemperature *= -1.0;
             }
-            Serial.print("bat_temp: ");
-            Serial.println(sol_batTemperature);
+            DebugSerial.print("bat_temp: ");
+            DebugSerial.println(sol_batTemperature);
           }
     }
   }

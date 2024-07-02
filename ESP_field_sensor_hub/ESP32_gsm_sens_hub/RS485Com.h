@@ -18,7 +18,8 @@
 #define DEV_IS_MASTER   /// compile with as master (base), or compile as slave (sensor)
 #endif
 
-SoftwareSerial serial485(RO_PIN, DI_PIN); // RX, TX
+/*SoftwareSerial serial485(RO_PIN, DI_PIN); // RX, TX*/
+
 
 class RS485Com {
 
@@ -82,7 +83,7 @@ class RS485Com {
 
     void printBuff(){
       for(i=0; i<MSGBUFF_LEN; i++){
-        Serial.print(msgBuff[i]);
+        DebugSerial.print(msgBuff[i]);
       }
     }
 
@@ -99,7 +100,8 @@ class RS485Com {
     RS485Com() {
       pinMode(DE_PIN, OUTPUT);
       digitalWrite(DE_PIN, LOW); /// Driver disabled - listening only
-      serial485.begin(BAUD);
+      /*Serial2.begin(BAUD);*/
+      Serial485.begin(9600, SERIAL_8N1, RO_PIN, DI_PIN);
     }
     /**
     * method checks if there is incoming data from Software serial UART, and reads data into msgBuff ring buffer
@@ -113,33 +115,34 @@ class RS485Com {
     * return 1; - no new msg from UART
     * return -1; - msg has no start or stop symbols/ msg too long/ CRC incorrect/ address incorrect
     */
+    #define PRINT_RAW_CHARS
     int checkInbuf( const char &acceptOnlyFromType = 0, const char &acceptOnlyFromAddress = 0) {
-      if (!serial485.available()) {
+      if (!Serial485.available()) {
         return 1; /// no incoming msg
       }
       msgRcvd = false;
       serCharTimeout = 0;
       while (!msgRcvd && (serCharTimeout <= TMOUT)) {
-          if (!serial485.available()) {   /// if there is no new character, wait for a bit
+          if (!Serial485.available()) {   /// if there is no new character, wait for a bit
             serCharTimeout++;
             delayMicroseconds(10000);
             continue;
           }
           serCharTimeout = 0;
-          msgBuff[strIndex] = serial485.read();
+          msgBuff[strIndex] = Serial485.read();
 #ifdef PRINT_RAW_CHARS
-          Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
+          DebugSerial.println(msgBuff[strIndex]);  /// DBG print incoming character
 #endif     
           if(msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 1) % MSGBUFF_LEN] && msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 2) % MSGBUFF_LEN]){ /// check if there are 3 same chars next to each other
             //Serial.print(F("3 same chars next to each other at index: "));
             if(msgBuff[strIndex] == STARTSYMB){
-              Serial.print(F("RS485| found start at: "));
-              Serial.println(strIndex);
+              DebugSerial.print(F("RS485| found start at: "));
+              DebugSerial.println(strIndex);
               strHead = strIndex;
             }
             else if(msgBuff[strIndex] == ENDSYMB){
-              Serial.print(F("RS485| found end at: "));
-              Serial.println(strIndex);
+              DebugSerial.print(F("RS485| found end at: "));
+              DebugSerial.println(strIndex);
               msgRcvd = true;  /// will break loop, but first increment strIndex
               strHead = (strHead + 1)%MSGBUFF_LEN;  /// offset msg to skip '<' startchar
               strIndex = (strIndex + MSGBUFF_LEN - 2)%MSGBUFF_LEN;
@@ -149,47 +152,47 @@ class RS485Com {
           }
           /*if(strIndex == ((strHead + MSGBUFF_LEN - 1)% MSGBUFF_LEN)){ /// TODO: test this some more
             /// ring buffer is full, TLDR
-              Serial.println(F("Msg too long:"));
+              DebugSerial.println(F("Msg too long:"));
               while(serial485.available()){
-                Serial.print((char)serial485.read());
+                DebugSerial.print((char)serial485.read());
               }
-               Serial.println(F("-> dropped characters."));
+               DebugSerial.println(F("-> dropped characters."));
               return -1;
           }*/
           strIndex = (strIndex + 1) % MSGBUFF_LEN;
           
       }
       if(!msgRcvd){
-        Serial.println(F("RS485| [ Er ] Incomplete msg or timeout!"));
+        DebugSerial.println(F("RS485| [ Er ] Incomplete msg or timeout!"));
         return -1;
       }
       if(msgBuff[strHead] != THIS_DEV_ADDR){  /// check if msg starts with this devices address
-        Serial.println(F("RS485| MSG not for me!"));
+        DebugSerial.println(F("RS485| MSG not for me!"));
         return -1;
       }
-      //Serial.println(crc16(strPtr, 9));
-      //Serial.println(crc16Ring(strHead,strIndex));
+      //DebugSerial.println(crc16(strPtr, 9));
+      //DebugSerial.println(crc16Ring(strHead,strIndex));
       if (crc16Ring(strHead,strIndex) != 0){
-        Serial.println(F("RS485| CRC incorrect"));
+        DebugSerial.println(F("RS485| CRC incorrect"));
         return -1;
       }
-      //Serial.println("CRC correct");
+      //DebugSerial.println("CRC correct");
       strIndex = (strIndex + MSGBUFF_LEN - 2)%MSGBUFF_LEN;  /// drop CRC16 bytes from msg
-      Serial.print(F("RS485| Got: "));
+      DebugSerial.print(F("RS485| Got: "));
       for(i = strHead; i != strIndex; i = (i + 1)%MSGBUFF_LEN){
-        Serial.print(msgBuff[i]);
+        DebugSerial.print(msgBuff[i]);
       }
-      Serial.println();
+      DebugSerial.println();
 
       if(acceptOnlyFromAddress != 0){
         if(msgBuff[(strHead + 1)%MSGBUFF_LEN] != acceptOnlyFromAddress){
-          Serial.println(F("RS485| MSG NOT FROM EXP. SENDER"));
+          DebugSerial.println(F("RS485| MSG NOT FROM EXP. SENDER"));
           return -1;
         }
       }
       if(acceptOnlyFromType !=0){
         if(msgBuff[(strHead + 2)%MSGBUFF_LEN] != acceptOnlyFromType){
-          Serial.println(F("RS485| MSG NOT FROM EXP. TYPE"));
+          DebugSerial.println(F("RS485| MSG NOT FROM EXP. TYPE"));
           return -1;
         }
       }
@@ -197,7 +200,7 @@ class RS485Com {
     }
 
     int isAvailable() {
-      if (!serial485.available()) {
+      if (!Serial485.available()) {
         return -1; /// no incoming msg
       }
       return 0;
@@ -205,8 +208,8 @@ class RS485Com {
 
     int chkIfPoll(){
       for(i = strHead; i != (strIndex + MSGBUFF_LEN - POLL_ALL_LEN + 1)%MSGBUFF_LEN; i = (i + 1)%MSGBUFF_LEN){
-        /*Serial.print(msgBuff[i]);
-        Serial.println(POLL_ALL_LEN);*/
+        /*DebugSerial.print(msgBuff[i]);
+        DebugSerial.println(POLL_ALL_LEN);*/
         j =0;
         for(j=0; j< (POLL_ALL_LEN); j++){
           if(msgBuff[(i + j)%MSGBUFF_LEN] != POLL_ALL[j]){
@@ -214,7 +217,7 @@ class RS485Com {
           }    
         }
         if (j == (POLL_ALL_LEN)){
-           // Serial.println("Found poll req!");
+           // DebugSerial.println("Found poll req!");
             return 0;
         }
       }
@@ -253,7 +256,7 @@ class RS485Com {
     int sendMsg(const char &destinationAddr,const char &sourceAddr, const char &devType) {
       uint16_t payloadLen = strlen(msgBuff);
       if(payloadLen < 1){
-        Serial.println("msgBuff is empty. Not sending.");
+        DebugSerial.println("msgBuff is empty. Not sending.");
         return -1;
       }
 
@@ -277,9 +280,9 @@ class RS485Com {
       digitalWrite(DE_PIN, HIGH); /// Driver enabled - send
       delay(5);
       //serial485.print(msgBuff);
-      serial485.write(msgBuff, (payloadLen + 8));  /// TODO: this should fix '\0' char shenanigans but test it.
-      serial485.flush();  /// wait for TXC0, serial buff sent
-      Serial.println(msgBuff);
+      Serial485.write(msgBuff, (payloadLen + 8));  /// TODO: this should fix '\0' char shenanigans but test it.
+      Serial485.flush();  /// wait for TXC0, serial buff sent
+      DebugSerial.println(msgBuff);
       delay(5);
       digitalWrite(DE_PIN, LOW); /// Driver disabled - listening only
 
@@ -289,8 +292,8 @@ class RS485Com {
 
 
 #ifdef VERB_SER
-      Serial.print("sent: ");
-      Serial.println(msgBuff);
+      DebugSerial.print("sent: ");
+      DebugSerial.println(msgBuff);
 #endif
     return 0;
 

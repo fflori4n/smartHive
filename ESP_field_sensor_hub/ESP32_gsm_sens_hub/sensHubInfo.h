@@ -7,7 +7,7 @@ void getSubstring(char* destination, char* source, uint8_t startIndex, uint8_t e
 
 void clearTrailingZeros(char* string) {
   for (int i = 0; i < strlen(string); i++) {
-    //Serial.println(*(string + strlen(string) - i));
+    //DebugSerial.println(*(string + strlen(string) - i));
     if (strstr(string, ".") == NULL) {
       return;
     }
@@ -110,10 +110,10 @@ void getSimformation(char (& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char (& te
 //
 //
 //#ifdef _GNSS_GSM_VERBOSE
-//    Serial.print("RSSI| ");
-//    Serial.println(rssiStr);
-//    Serial.print("RSSI dBm| ");
-//    Serial.print(rssiSimNotation);
+//    DebugSerial.print("RSSI| ");
+//    DebugSerial.println(rssiStr);
+//    DebugSerial.print("RSSI dBm| ");
+//    DebugSerial.print(rssiSimNotation);
 //#endif
 //  }
 //
@@ -122,9 +122,9 @@ void getSimformation(char (& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char (& te
 //  int res = gsmModem.atSend("AT+CGNSINF\r","+CGNSINF: 1,1",5000,"+CGNSINF: 1,0");
 //
 //#ifdef _GNSS_GSM_VERBOSE
-//  if(res == -1){Serial.println("GNSS| PWR on, No fix.");}
-//  else if(res == -2 || res == -3){Serial.println("GNSS| No fix, unknown.");}
-//  Serial.println(gsmModem.getInBuffer());
+//  if(res == -1){DebugSerial.println("GNSS| PWR on, No fix.");}
+//  else if(res == -2 || res == -3){DebugSerial.println("GNSS| No fix, unknown.");}
+//  DebugSerial.println(gsmModem.getInBuffer());
 //#endif
 //
 //  /// parse gnss info string
@@ -156,24 +156,24 @@ void getSimformation(char (& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], char (& te
 //#ifdef _GNSS_GSM_VERBOSE
 //      switch(commaCount){
 //        case 3:
-//          Serial.print("GNSS| latitude: ");
-//          Serial.println(latitudeStr);
+//          DebugSerial.print("GNSS| latitude: ");
+//          DebugSerial.println(latitudeStr);
 //        break;
 //        case 4:
-//          Serial.print("GNSS| longitude: ");
-//          Serial.println(longitudeStr);
+//          DebugSerial.print("GNSS| longitude: ");
+//          DebugSerial.println(longitudeStr);
 //        break;
 //        case 5:
-//          Serial.print("GNSS| height: ");
-//          Serial.println(gnssHeightStr);/// TODO: clear trailing zeros from str
+//          DebugSerial.print("GNSS| height: ");
+//          DebugSerial.println(gnssHeightStr);/// TODO: clear trailing zeros from str
 //        break;
 //        case 14:
-//          Serial.print("GNSS| satNum: ");
-//          Serial.println(gnssSateliteNumStr);
+//          DebugSerial.print("GNSS| satNum: ");
+//          DebugSerial.println(gnssSateliteNumStr);
 //        break;
 //        case 18:
-//          Serial.print("GNSS| CN0: ");
-//          Serial.println(gnssCN0Str);
+//          DebugSerial.print("GNSS| CN0: ");
+//          DebugSerial.println(gnssCN0Str);
 //        break;
 //      }
 //#endif

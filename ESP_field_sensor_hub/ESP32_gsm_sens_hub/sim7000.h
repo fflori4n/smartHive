@@ -87,7 +87,7 @@ class SimModem {
 
           if ((comInIndex + 1) >= SIM_MODEM_SOFTRX_BUFF_SIZE) {
             result = res_error;
-            Serial.print(F("SIM_RESP|RX BUFF FULL"));
+            DebugSerial.print(F("SIM_RESP|RX BUFF FULL"));
           }
           else {
             comInIndex++;
@@ -119,7 +119,7 @@ class SimModem {
       }
 
       if((stopKey != NULL) && (strstr(comInBuffer, stopKey) == NULL)){
-        Serial.println(F("SIM_RESP| NO STOP.KEY - WAIT TMOUT [WR]"));
+        DebugSerial.println(F("SIM_RESP| NO STOP.KEY - WAIT TMOUT [WR]"));
       }
       if ((negativeRespKey != NULL) && (strstr(comInBuffer, negativeRespKey) != NULL)) {
         result = res_negative;
@@ -133,32 +133,32 @@ class SimModem {
       if (false == muteDbgSerial) {
         switch (result) {
           case res_positive:
-            Serial.print(F("SIM_RESP| OK    |ms:"));
-            Serial.print(responseTime);
-            Serial.println(F("|recieved:"));
+            DebugSerial.print(F("SIM_RESP| OK    |ms:"));
+            DebugSerial.print(responseTime);
+            DebugSerial.println(F("|recieved:"));
             break;
           case res_negative:
-            Serial.print(F("SIM_RESP| NO OK |ms:"));
-            Serial.print(responseTime);
-            Serial.println(F("|recieved:"));
+            DebugSerial.print(F("SIM_RESP| NO OK |ms:"));
+            DebugSerial.print(responseTime);
+            DebugSerial.println(F("|recieved:"));
             break;
           case res_timeout:
-            Serial.print(F("SIM_RESP| TIMEOUT |ms:"));
-            Serial.print(responseTime);
-            Serial.println(F("|recieved:"));
+            DebugSerial.print(F("SIM_RESP| TIMEOUT |ms:"));
+            DebugSerial.print(responseTime);
+            DebugSerial.println(F("|recieved:"));
             break;
           case res_error:
-            Serial.print(F("SIM_RESP|  ERROR  |ms:"));
-            Serial.print(responseTime);
-            Serial.println(F("|recieved:"));
+            DebugSerial.print(F("SIM_RESP|  ERROR  |ms:"));
+            DebugSerial.print(responseTime);
+            DebugSerial.println(F("|recieved:"));
             break;
           default:
             break;
         }
         if (comInBuffer[0] != '\0') {
-          Serial.println(F("[["));
-          Serial.println(comInBuffer);
-          Serial.println(F("]]"));
+          DebugSerial.println(F("[["));
+          DebugSerial.println(comInBuffer);
+          DebugSerial.println(F("]]"));
         }
       }
 
@@ -177,8 +177,8 @@ class SimModem {
         result = res_negative;
       }
 
-      Serial.print(F("SIM_RX_EVAL|"));
-      Serial.println(result);
+      DebugSerial.print(F("SIM_RX_EVAL|"));
+      DebugSerial.println(result);
       return result;
     }
 
@@ -186,7 +186,7 @@ class SimModem {
 
       tResult result = res_timeout;
 
-      Serial.print("SIM|Sending wakeup");
+      DebugSerial.print("SIM|Sending wakeup");
 
       this->simModem.flush(); /* fush TX buffer, probably not important but better safe.*/
       vTaskDelay(3000 / portTICK_PERIOD_MS);
@@ -195,7 +195,7 @@ class SimModem {
 
         const char* payload = "AT\r";
 
-        Serial.print(".");
+        DebugSerial.print(".");
 
         if (!(this->simModem)) {
           result = res_error;
@@ -203,7 +203,7 @@ class SimModem {
         }
 
         if (NULL == strstr(payload, "\r")) {
-          Serial.print("SIM|NO \r in payload [WR]");
+          DebugSerial.print("SIM|NO \r in payload [WR]");
         }
 
         size_t payloadSize = strnlen(payload, 65535u);
@@ -269,7 +269,7 @@ class SimModem {
         this->simModem.begin(baud, SERIAL_8N1, GSMRX_PIN, GSMTX_PIN);
       }
       else {
-        Serial.println("SIM|Serial exists [WR]");
+        DebugSerial.println("SIM|Serial exists [WR]");
         return (int8_t)res_positive;
       }
 
@@ -279,26 +279,26 @@ class SimModem {
         if (this->simModem) {
 
           /*this->simModem.clear(); /* clear TX and RX buffers */
-          Serial.println("SIM|SERIAL STARTED [OK]");
+          DebugSerial.println("SIM|SERIAL STARTED [OK]");
           return (int8_t)res_positive;
         }
         vTaskDelay(SIM_MODEM_WAIT_DELAY / portTICK_PERIOD_MS);
       }
-      Serial.println("SIM|Serial init timeout [WR]");
+      DebugSerial.println("SIM|Serial init timeout [WR]");
       return (int8_t)res_error;
     }
 
     int8_t atPrintNoCheck(const char* payload) {
 
-      Serial.print("SIM|Sending: ");
-      Serial.println(payload);
+      DebugSerial.print("SIM|Sending: ");
+      DebugSerial.println(payload);
 
       if (!(this->simModem)) {
         return (int8_t)res_error;
       }
 
       if (NULL == strstr(payload, "\r")) {
-        Serial.print("SIM|NO \r in payload [WR]");
+        DebugSerial.print("SIM|NO \r in payload [WR]");
       }
 
       size_t payloadSize = strnlen(payload, 65535u);
@@ -316,15 +316,15 @@ class SimModem {
     /* Blocking while waiting for response! return result */
     int8_t atPrint(const char* payload, const char* positiveResp, const char* negativeResp = "ERROR", const char* txStopped = NULL, uint32_t timeout = 5000 ) {
 
-      Serial.print("SIM|Sending: ");
-      Serial.println(payload);
+      DebugSerial.print("SIM|Sending: ");
+      DebugSerial.println(payload);
 
       if (!(this->simModem)) {
         return (int8_t)res_error;
       }
 
       if (NULL == strstr(payload, "\r")) {
-        Serial.print("SIM|NO \r in payload [WR]");
+        DebugSerial.print("SIM|NO \r in payload [WR]");
       }
 
       size_t payloadSize = strnlen(payload, 65535u);
@@ -341,11 +341,11 @@ class SimModem {
 
       for (uint8_t i = 0; ((i < retryNum) && (res_positive != result)); i++) {
 
-        Serial.print("SIM|Sending: ");
-        Serial.println(payload);
+        DebugSerial.print("SIM|Sending: ");
+        DebugSerial.println(payload);
 
         if (NULL == strstr(payload, "\r")) {
-          Serial.print("SIM|NO \r in payload [WR]");
+          DebugSerial.print("SIM|NO \r in payload [WR]");
         }
 
         if (!(this->simModem)) {
@@ -384,10 +384,10 @@ class SimModem {
       int rssiRaw = 0;
       getSubstring(response, " ", ",", responseCVSmember);  /* rssi */
       sscanf(responseCVSmember, "%d", &rssiRaw);
-      Serial.println(rssiRaw);
+      DebugSerial.println(rssiRaw);
 
       (rssiRaw < 32) ? (simformation.sim_rssi = RSSILUT[rssiRaw]) : (simformation.sim_rssi = 0);  /// convert SIM response to dBm or -99
-      Serial.println(simformation.sim_rssi);
+      DebugSerial.println(simformation.sim_rssi);
       return 0;
     }
 
@@ -411,14 +411,19 @@ class SimModem {
 
       res = evaluateRxBufferContent("+CGNSINF: 1,1", "+CGNSINF: 1,0");
 
+      if(res != res_positive){
+        return -1;
+      }
       /*char responseCVSmember[32] = {'\0'};*/
-      char* response = strstr(this->comInBuffer, "+CGNSINF: 1,1") + strlen("+CGNSINF: 1,1");
+      char* response = strstr(this->comInBuffer, "+CGNSINF: 1,1");
       if (NULL == response) {
         return -1;
       }
 
-      Serial.print("GNSS str:");
-      Serial.print(response);
+      response += strlen("+CGNSINF: 1,1");
+
+      DebugSerial.print("GNSS str:");
+      DebugSerial.print(response);
 
       getSubstring(pointerToNth(response, ',', 0), ",", ".", responseCVSmember);
 
@@ -430,44 +435,44 @@ class SimModem {
 
       // Convert tm struct to Unix timestamp
       simformation.gnss_unixTime = mktime(&simformation.gnss_timeinfo);
-      Serial.println("gnss unix timestamp:");
-      Serial.println(simformation.gnss_unixTime);
+      DebugSerial.println("gnss unix timestamp:");
+      DebugSerial.println(simformation.gnss_unixTime);
 
-      /*Serial.println(simformation.gnss_timeinfo.tm_year);
-        Serial.println(simformation.gnss_timeinfo.tm_mon);
-        Serial.println(simformation.gnss_timeinfo.tm_mday);
-        Serial.println(simformation.gnss_timeinfo.tm_hour);
-        Serial.println(simformation.gnss_timeinfo.tm_min);
-        Serial.println(simformation.gnss_timeinfo.tm_sec);*/
+      /*DebugSerial.println(simformation.gnss_timeinfo.tm_year);
+        DebugSerial.println(simformation.gnss_timeinfo.tm_mon);
+        DebugSerial.println(simformation.gnss_timeinfo.tm_mday);
+        DebugSerial.println(simformation.gnss_timeinfo.tm_hour);
+        DebugSerial.println(simformation.gnss_timeinfo.tm_min);
+        DebugSerial.println(simformation.gnss_timeinfo.tm_sec);*/
 
       getSubstring(pointerToNth(response, ',', 1), ",", ",", responseCVSmember);  /* latitude */
       sscanf(responseCVSmember, "%lf", &simformation.gnss_latitude);
-      Serial.println(simformation.gnss_latitude);/**1000000*/
+      DebugSerial.println(simformation.gnss_latitude);/**1000000*/
 
       getSubstring(pointerToNth(response, ',', 2), ",", ",", responseCVSmember);  /* longitude */
       sscanf(responseCVSmember, "%lf", &simformation.gnss_longitude);
-      Serial.println(simformation.gnss_longitude);
+      DebugSerial.println(simformation.gnss_longitude);
 
       getSubstring(pointerToNth(response, ',', 3), ",", ",", responseCVSmember);  /* MASL */
       sscanf(responseCVSmember, "%lf", &simformation.gnss_masl);
-      Serial.println(simformation.gnss_masl);
+      DebugSerial.println(simformation.gnss_masl);
 
       getSubstring(pointerToNth(response, ',', 4), ",", ",", responseCVSmember);  /* Speed */
       sscanf(responseCVSmember, "%lf", &simformation.gnss_groundSpeed);
-      Serial.println(simformation.gnss_groundSpeed);
+      DebugSerial.println(simformation.gnss_groundSpeed);
 
       getSubstring(pointerToNth(response, ',', 5), ",", ",", responseCVSmember);  /* Course */
       sscanf(responseCVSmember, "%lf", &simformation.gnss_course);
-      Serial.println(simformation.gnss_course);
+      DebugSerial.println(simformation.gnss_course);
 
       simformation.gnss_satelites = 0;
       getSubstring(pointerToNth(response, ',', 12), ",", ",", responseCVSmember);  /* Course */
       sscanf(responseCVSmember, "%d", &simformation.gnss_satelites);
-      Serial.println(simformation.gnss_satelites);
+      DebugSerial.println(simformation.gnss_satelites);
 
       getSubstring(pointerToNth(response, ',', 16), ",", ",", responseCVSmember);  /* Course */
       sscanf(responseCVSmember, "%d", &simformation.gnss_cnoMax);
-      Serial.println(simformation.gnss_cnoMax);
+      DebugSerial.println(simformation.gnss_cnoMax);
 
       return (int8_t)res;
     }
@@ -488,7 +493,7 @@ class SimModem {
 
     int8_t connectToNetwork() {
 
-      tResult res = (tResult)(this->atPrintWRetry("AT+CNACT?\r", "+CNACT: 1", "0.0.0.0","OK\r", 5000, 4));
+      tResult res = (tResult)(this->atPrintWRetry("AT+CNACT?\r", "+CNACT: 1", "0.0.0.0","OK\r", 25000, 2));
 
       if (res_positive == res) {
         return 0;
@@ -497,18 +502,19 @@ class SimModem {
 
         /* authenticate sim and connect to carrier */
 
-        res = (tResult)(this->atPrintWRetry("AT+CPIN?\r", "OK", "ERROR", "OK\r",5000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+CNMP=13\r", "OK", "ERROR", "OK\r",5000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+CNACTCFG=IPV4V6\r", "OK", "ERROR", "OK\r",10000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+CREG?\r", "+CREG: 0,1", "ERROR", "OK\r",30000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+CSQ\r", "OK", "ERROR", "OK\r",5000, 4));
+        res = (tResult)(this->atPrintWRetry("AT+CPIN?\r", "OK", "ERROR", "OK\r",5000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+CNMP=13\r", "OK", "ERROR", "OK\r",5000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+CNACTCFG=IPV4V6\r", "OK", "ERROR", "OK\r",10000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+CREG?\r", "+CREG: 0,1", "ERROR", "OK\r",30000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+CSQ\r", "OK", "ERROR", "OK\r",5000, 2));
 
         /* set APN config and connect to the internet */
-        res = (tResult)(this->atPrintWRetry("AT+SAPBR=3,1,\"Contype\",\"GPRS\"\r", "OK", "ERROR","OK\r", 5000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+SAPBR=3,1,\"APN\",\"mts\"\r", "OK", "ERROR", "OK\r",5000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+SAPBR=3,1,\"PWD\",\"064\"\r", "OK", "ERROR","OK\r", 5000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+CGATT?\r", "+CGATT: 1", NULL, "OK\r",20000, 4));
-        res = (tResult)(this->atPrintWRetry("AT+CNACT=1,\"mts\"\r", "+CGATT: 1", "ERROR","+APP PDP:", 30000, 4));
+        res = (tResult)(this->atPrintWRetry("AT+SAPBR=3,1,\"Contype\",\"GPRS\"\r", "OK", "ERROR","OK\r", 5000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+SAPBR=3,1,\"APN\",\"mts\"\r", "OK", "ERROR", "OK\r",5000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+SAPBR=3,1,\"PWD\",\"064\"\r", "OK", "ERROR","OK\r", 5000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+CGATT?\r", "+CGATT: 1", NULL, "OK\r",20000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+CNACT=1,\"mts\"\r", "PDP: ACTIVE", "ERROR","+APP PDP:", 30000, 2));
+        res = (tResult)(this->atPrintWRetry("AT+CNACT?\r", "PDP: ACTIVE", NULL,"OK\r", 5000, 2));
 
         return (int8_t)res;
 
@@ -518,7 +524,25 @@ class SimModem {
         return -1;
       }
     }
+    int8_t mqttClientDisconnect(){
 
+      tResult res = (tResult)(this->atPrintWRetry("AT+SMSTATE?\r", "+SMSTATE: 0", "+SMSTATE: 1", "OK\r", 5000, 1));
+      
+      if(res_positive == res){
+        return (int8_t)res;
+      }
+      
+      res = (tResult)(this->atPrintWRetry("AT+SMDISC\r", "OK", "ERROR", "OK\r", 5000, 1));
+      vTaskDelay(200 / portTICK_PERIOD_MS);
+      res = (tResult)(this->atPrintWRetry("AT+SMSTATE?\r", "+SMSTATE: 0", "+SMSTATE: 1", "OK\r", 5000, 1));
+      
+      if(res_positive == res){
+        return (int8_t)res;
+      }
+      
+      return (int8_t)res_negative;
+    };
+    
     int8_t sendMqtt(char(& mqttPayloadBuff)[MQTT_PAYLOAD_BUFF_LEN], const char* mqttTopic) {
       /* TODO: values are hardcoded for simplicity. */
       /*check if config is already set, this is done by checking if the URL is set chances are other params are also set. */
@@ -531,15 +555,21 @@ class SimModem {
       }
 
       /* connect to broker */
-      res = (tResult)(this->atPrintWRetry("AT+SMCONN\r", "OK", "ERROR", "OK\r", 35000, 1));
-      vTaskDelay(5000 / portTICK_PERIOD_MS);
+      res = (tResult)(this->atPrintWRetry("AT+SMSTATE?\r", "+SMSTATE: 1", "+SMSTATE: 0", "OK\r", 5000, 1));
 
-
+      if((res_negative == res)||(res_timeout == res)){
+        res = (tResult)(this->atPrintWRetry("AT+SMCONN\r", "OK", "ERROR", "OK\r", 35000, 1));
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+      }
+      
       snprintf(this->comOutBuffer, SIM_MODEM_SOFTTX_BUFF_SIZE, "AT+SMPUB=\"%s\",\"%d\",1,1\r", mqttTopic, strlen(mqttPayloadBuff));
-      Serial.print("MQTT| topic:");
-      Serial.println(this->comOutBuffer);
-      Serial.print("MQTT| sending:");
-      Serial.println(mqttPayloadBuff);
+      vTaskDelay(500 / portTICK_PERIOD_MS);
+      
+      DebugSerial.print("MQTT| topic:");
+      DebugSerial.println(this->comOutBuffer);
+      DebugSerial.print("MQTT| sending:");
+      DebugSerial.println(mqttPayloadBuff);
+      
       res = (tResult)(this->atPrint(this->comOutBuffer, ">", NULL,">", 5000));
       if (res_positive == res) {
 
@@ -547,8 +577,13 @@ class SimModem {
         vTaskDelay(5000 / portTICK_PERIOD_MS);
       }
 
-      res = (tResult)(this->atPrintWRetry("AT+SMDISC\r", "OK", "ERROR", "OK\r", 5000, 1));
+      /*res = (tResult)(this->atPrintWRetry("AT+SMDISC\r", "OK", "ERROR", "OK\r", 5000, 1));
 
-      return 0;
+      for(int i =0; ((i < 6) && (res != res_positive)); i++){
+        res = (tResult)(this->atPrintWRetry("AT+SMSTATE?\r", "1", "0", "OK\r", 5000, 1));
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+      }*/
+
+      return (int8_t)res_positive;
     }
 };

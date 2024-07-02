@@ -42,19 +42,19 @@ class ESPtime {
       if(!force && abs((int32_t)time(NULL) - lastUpdate) < (UPDATE_TIME_PERIOD_MINS*60)){
         return 1;
       }
-      Serial.print(F("TIME| system time update."));
+      DebugSerial.print(F("TIME| system time update."));
 
       if(simModem.simformation.gnss_unixTime <= 1718222292){
         return -1;
       }
 
-      Serial.print(F("TIME| Old:"));
+      DebugSerial.print(F("TIME| Old:"));
       printLocalTime();
       setUnixtime((simModem.simformation.gnss_unixTime + gmtOffset_sec));
       lastUpdate = (int32_t)time(NULL);
-      Serial.print(F("TIME| New:"));
+      DebugSerial.print(F("TIME| New:"));
       printLocalTime();
-      Serial.println(F("TIME| [ OK ]"));
+      DebugSerial.println(F("TIME| [ OK ]"));
       return 0;
       
     }
@@ -62,7 +62,7 @@ class ESPtime {
     void printLocalTime()
     {
       getLocalTime(&now, 0);
-      Serial.print(&now, " %B %d %Y %H:%M:%S (%A)\n");
+      DebugSerial.print(&now, " %B %d %Y %H:%M:%S (%A)\n");
     }
 
     bool isTimeForSend(){
@@ -71,7 +71,7 @@ class ESPtime {
       }
       getLocalTime(&now, 0);
       if((now.tm_min % 5) == 0){
-        Serial.println("Send it.");
+        DebugSerial.println("Send it.");
         lastMqttSend = (int32_t)time(NULL);
         return true;
       }
@@ -91,7 +91,7 @@ class ESPtime {
       
       getLocalTime(&now, 0);
       if((now.tm_hour == 0) && (now.tm_min == 22) && (((now.tm_min - prevMin) == 1) || (abs((now.tm_min - prevMin)) == 59 ))&& (lastRebootReason != 3)){
-        Serial.println("Send it.");
+        DebugSerial.println("Send it.");
         lastMqttSend = (int32_t)time(NULL);
         isRebootTime = true;
       }

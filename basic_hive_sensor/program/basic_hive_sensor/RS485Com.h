@@ -7,7 +7,7 @@
 #define BAUD 9600
 
 /// Addr can't be 0 because translates to '\0' and f*cks up all kinds of string functions!!!
-#define THIS_DEV_ADDR 66
+#define THIS_DEV_ADDR 65
 #define MASTER_DEV_ADDR 70
 #define DEV_TYPE_CHAR 'A'
 
@@ -129,9 +129,9 @@ class RS485Com {
           }
           serCharTimeout = 0;
           msgBuff[strIndex] = serial485.read();
-#ifdef PRINT_RAW_CHARS
-          Serial.println(msgBuff[strIndex]);  /// DBG print incoming character
-#endif     
+/*#ifdef PRINT_RAW_CHARS*/
+          Serial.print(msgBuff[strIndex]);  /// DBG print incoming character
+/*#endif */    
           if(msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 1) % MSGBUFF_LEN] && msgBuff[strIndex] == msgBuff[(strIndex + MSGBUFF_LEN - 2) % MSGBUFF_LEN]){ /// check if there are 3 same chars next to each other
             //Serial.print(F("3 same chars next to each other at index: "));
             if(msgBuff[strIndex] == STARTSYMB){
@@ -274,6 +274,7 @@ class RS485Com {
  * Example:
  * <<<AF,POL*⸮⸮>>>
  * <<<FAH,210,370,-999,-999,-999,-999,0,0⸮⸮>>>
+ *
  * 
  * 
  */

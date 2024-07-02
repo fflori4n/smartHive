@@ -9,9 +9,9 @@
 #define DE_PIN 4//12
 
 /// - DHT SENSORS -
-#define DHT0_PIN 10
+#define DHT0_PIN 12
 #define DHT1_PIN 11
-#define DHT2_PIN 12
+#define DHT2_PIN 10
 
 /// - OTHER PINS -
 #define WAKE_PIN 2
@@ -34,9 +34,9 @@
 
 /// - DHT SENSOR OBJECTS -
 /// DEFINE DHT SENSORS USED, AND CREATE DHT TYPE OBJECT - COMMENT/UNCOMMENT and CHANGE DHT TYPE
-#define DHT0_TYPE DHT22
+//#define DHT0_TYPE DHT11
 #define DHT1_TYPE DHT11
-//#define DHT2_TYPE DHT22
+#define DHT2_TYPE DHT22
 
 
 #ifdef DHT1_TYPE
